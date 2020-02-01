@@ -21,3 +21,36 @@
 
 ##  Redis常见数据结构以及使用场景分析
 
+###  String
+
+常用命令：set、get、decr、incr、mget等。
+
+String是简单的key-value类型，value不仅仅是String，还可以是数据。常规key-value缓存应用；常规技术：微博数、粉丝数等
+
+###  Hash
+
+常用命令：hset、hget、hgetall等。
+
+Hash是一个String类型的field和value的映射表，Hash特别适合用于存储对象，后续操作的时候，可以直接仅仅修改这个对象中的某个字段的值。
+
+>key=JavaUserVictor
+>
+>value={
+>
+>"id" : 1 ,
+>
+>"name" : "Victor",
+>
+>"age" : 20 
+>
+>}
+
+###  List
+
+常用命令：lpush、rpush、lpop、rpop、lrange等。
+
+List为一个双向链表，是Redis最重要的数据结构之一，比如微博的关注列表、粉丝列表、消息列表等功能都可以用List来实现。
+
+###  Set
+
+常用命令：sadd、spop、smembers、sunion等。

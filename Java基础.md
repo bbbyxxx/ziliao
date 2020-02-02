@@ -191,3 +191,11 @@ ConcurrentHashMap是线程安全的，在1.7中采用Segment+HashEntry的方式�
 
 1.8中放弃了Segment臃肿的设计，取而代之的是采用Node + CAS + Synchronized来保证并发安全进行实现，1.8中使用一个volatile类型的变量baseCount记录元素的个数，当插入新数据或删除数据时，会通过addCount方法更新baseCount，通过累加baseCount和CounterCell数组中的数量，即可得到元素的总个数。
 
+###  Collection和Collections的区别
+
+Collection是集合类的上层接口，继承与它的接口主要有Set和List。
+
+Collections是针对集合类的一个帮助类，它提供一系列静态方法实现对各种集合的搜索、排序、线程安全化等操作。
+
+
+

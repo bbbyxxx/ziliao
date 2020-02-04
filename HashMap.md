@@ -187,6 +187,12 @@ final Node<K,V>[] resize() {
     }
 ```
 
+先通过hash算法得到hash值，hash & (n-1)得到存储位置，判断Node数组table是否为null或者长度是否为0，如果是则进行resize对table进行初始化，否则判断table[i]是否有元素，如果没有则直接进行插入，否则判断传入的key是否存在，如果存在用新值覆盖旧值，不存在则判断是否为TreeNode，是则进行红黑树插入，否则进行链表插入，插入后判断是否需要扩容，如果需要则进行扩容，否则结束。
+
+![HashMap-putVal](/Users/a/Desktop/Java-victor/images/HashMap-putVal.png)
+
+![HashMap-红黑树插入](/Users/a/Desktop/Java-victor/images/HashMap-红黑树插入.png)
+
 ###  hash冲突发生的几种情况
 
 - 两节点key值相同（hash值一定相同），导致冲突
@@ -206,4 +212,3 @@ HashMao在并发时可能出现的问题主要是两方面：
 
 1. JDK1.7用的是头插法，而JDK1.8及之后都是尾插法，采用头插法利用了单链表的纵向延伸，当采用头插法的时候能够提高插入的效率，但是也会容易出现逆序且环形链表死循环问题。但是在1.8之后因为加入了红黑树使用尾插法，能够避免出现逆序且链表死循环的问题。
 2. JDK1.7采用数组+单链表，1.8及之后采用数组+链表+红黑树，把时间复杂度从O(N)变成O(logN)。
-

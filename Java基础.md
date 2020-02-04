@@ -185,11 +185,15 @@ ArrayList是采用数组实现的，查找效率比LinkedList高，LinkedList采
 - 每个红色节点的两个子节点都是黑色
 - 从任一节点到其子树中的叶子节点的路径都包含相同数量的黑色节点
 
-###  ConcurrentHashMap1.7和1.8的区别？
+###  ConcurrentHashMap工作原理、1.7和1.8的区别？
 
-ConcurrentHashMap是线程安全的，在1.7中采用Segment+HashEntry的方式进行实现，lock加在Segment上。1.7size计算是先采用不加锁的方式，连续计算元素的个数，最多计算3次：1、如果前后两次计算结果相同，则说明计算出来的元素个数是准确的；2、如果前后两次计算结果都不同，则给每个Segment进行加锁，再计算一次元素的个数；
+####  工作原理
 
-1.8中放弃了Segment臃肿的设计，取而代之的是采用Node + CAS + Synchronized来保证并发安全进行实现，1.8中使用一个volatile类型的变量baseCount记录元素的个数，当插入新数据或删除数据时，会通过addCount方法更新baseCount，通过累加baseCount和CounterCell数组中的数量，即可得到元素的总个数。
+ConcurrentHashMap为了提高本身的并发能力，在内部采用了一个叫做Segment的结构，一个Segment其实就是一个类HashTable的结构，Segment内部维护了一个链表数组，ConcurrentHashMap定位一个元素的过需要两次Hash操作，第一次Hash定位到Segment，第二次Hash定位到元素所在的链表的头部，因此，带来的副作用是Hash的过程比普通的HashMap要长，好处是写操作的时候可以只对元素所在的Segment进行操作即可，不会影响到其它的Segment，这样，在理想的情况下，ConcurrentHashMap可以最高同时支持Segment数量大小的写操作，所以可以大大提高ConcurrentHashMap的并发能力。
+
+####  区别
+
+1.7之前采用的是锁机制，在对某个Segment进行操作时，将该Segment锁定，不允许对其进行非查询操作，而在1.8之后采用Node + CAS + Synchronized无锁算法， 进行了良好的优化。
 
 ###  Collection和Collections的区别
 

@@ -112,3 +112,31 @@ public class BIOServer {
 - BIO是以流的方式处理数据，而NIO以块的方式处理数据，块I/O的效率比流I/O高很多
 - BIO是阻塞的，NIO则是非阻塞的
 - BIO基于字节流和字符流进行操作，而NIO基于Channel和Buffer进行操作，数据总是从通道读取到缓冲区中，或者从缓冲区写入到通道中。Selector用于监听多个通道的时间，因此使用单线程就是可以监听多个客户端通道
+- BIO要么是输入流，要么是输出流，不能双向，但是NIO的Buffer可以读也可以写，需要flip方法切换
+
+####  Netty三大组件
+
+![Netty三大组件](/Users/a/Desktop/Java-victor/images/Netty/Netty三大组件.png)
+
+- 每个Channel都会对应一个Buffer
+- Selector对应一个线程，一个线程对应多个Channel
+- 程序切换到哪个Selector是由事件决定的，Event就是一个重要的概念
+- Selector会根据不同的时间，在各个通道上切换
+- Buffer就是一个内存块，底层是一个数组
+- 数据的读取写入是通过Buffer
+- Channel是双向的，可以返回底层操作系统的情况
+
+#####  Buffer
+
+缓冲区（Buffer)：本质上是一个可以读写数据的内存卡，可以理解成是一个容器对象，该对象提供了一组方法，可以更轻松地使用内存块，缓冲区对象内置了一些机制，能够跟踪和记录缓冲区的状态变化情况。Channel提供从文件、网络读取数据的渠道，但是读取或写入的数据都必须经由Buffer。 
+
+#####  Channel
+
+1. NIO的通道类似于流，但有些区别如下
+   - 通道可以同时进行读写，而流只能读或者只能写
+   - 通道可以实现异步读写数据
+   - 通道可以从缓冲读数据，也可以写数据到缓冲
+2. BIO中的Stream是单向的，例如FileInputStream对象只能进行读取数据的操作，而NIO的通道Channel是双向的，可以读也可以写
+3. Channel是一个接口，常见的Channel类有：FielChannel（文件）、DatagramChannel（UDP）、ServerSocketChannel和SocketChannel （后面两个用于TCP的数据读写）
+4. 
+

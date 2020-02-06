@@ -136,17 +136,79 @@ public class BIOServer {
    - 通道可以同时进行读写，而流只能读或者只能写
    - 通道可以实现异步读写数据
    - 通道可以从缓冲读数据，也可以写数据到缓冲
+   
 2. BIO中的Stream是单向的，例如FileInputStream对象只能进行读取数据的操作，而NIO的通道Channel是双向的，可以读也可以写
+
 3. Channel是一个接口，常见的Channel类有：FielChannel（文件）、DatagramChannel（UDP）、ServerSocketChannel和SocketChannel （后面两个用于TCP的数据读写）
+
+   ```java
+   public class NIOFileChannelDemo {
+       public static void main(String[] args) throws IOException {
+           File file = new File("/users/a/desktop/摄像头");
+   
+           FileInputStream fileInputStream = new FileInputStream(file);
+   
+           FileChannel channel1 = fileInputStream.getChannel();
+   
+           FileOutputStream fileOutputStream = new FileOutputStream("/users/a/desktop/she");
+   
+           FileChannel channel2 = fileOutputStream.getChannel();
+   
+           ByteBuffer byteBuffer = ByteBuffer.allocate((int) file.length());
+   
+           while (true) {
+               byteBuffer.clear();
+               int read = channel1.read(byteBuffer);
+               if (read == -1) {
+                   break;
+               }
+               byteBuffer.flip();
+               channel2.write(byteBuffer);
+           }
+           fileInputStream.close();
+           fileOutputStream.close();
+   
+       }
+   }
+   
+   ```
+
+   
 
 #####  关于Buffer和Channel的注意事项和细节
 
 1. ByteBuffer支持类型化的put和get，put放入的是什么数据类型，get就应该使用相应的数据类型来取出，否则可能有BufferUnderflowException。
+
 2. 可以讲一个普通Buffer转成只读Buffer。
+
 3. NIO还提供了MappedByteBuffer，可以让文件直接在内存中进行修改，而如何到文件由NIO来完成。
+
+   ```java
+   public class MappedByteBufferTest {
+       public static void main(String[] args) throws IOException {
+           RandomAccessFile randomAccessFile = new RandomAccessFile("/users/a/desktop/he","rw");
+           FileChannel fileChannel = randomAccessFile.getChannel();
+           MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, 5);
+           mappedByteBuffer.put(0,(byte) 'h');
+   
+       }
+   }
+   ```
+
+   
 
 #####  Selector
 
 - Selector能够检测到多个注册的通道上是否有事件发生（注意：多个Channel以事件的方式可以注册到同一个selector），如果有事件发生，便获取事件然后针对每个事件进行相应的处理。这样就可以只用一个单线程去管理多个通道，也就是管理多个连接和请求。
 
-- 只有在连接真正有读写事件发生时，才会进行读写，就大大减少了系统开销，并且不必为每个连接都创建一个线程，不用去维护多个线程，避免了多线程之间的上下文切换导致的开销。
+- 只有在连接/通道真正有读写事件发生时，才会进行读写，就大大减少了系统开销，并且不必为每个连接都创建一个线程，不用去维护多个线程，避免了多线程之间的上下文切换导致的开销。
+
+##  NIO非阻塞网络编程原理分析
+
+1. 当客户端连接时，会通过ServerSocketChannel得到SocketChannel。
+2. 将SocketChannel注册到Selector（register(Selector sel, int ops) ，一个selector可以注册多个SocketChannel。
+3. 注册后会返回一个SelectionKey，会和该Selector关联。
+4. Selector进行监听select方法，返回有事件发生的通道的个数。
+5. 进一步得到各个SelectionKey，反向获取SocketChannel。
+6. 根据得到的channel完成业务处理。
+

@@ -289,40 +289,124 @@ Java语言编译后会生成一个.class文件，反射就是通过字节码文�
 
 ### 负载均衡算法
 
-- 轮询
-  
-
-- 加权轮询
-
 - 随机
 
   ```java
-  public class Servers {
-    public List<String> list = new ArrayList<>() {
-      {
-      	add("192.168.1.1");
-      	add("192.168.1.2");
-      	add("192.168.1.3");
-      }
-    };
+  public class Server {
+      public List<String> list = new ArrayList<String>() {
+          {
+              add("192.168.0.1");
+              add("192.168.0.2");
+              add("192.168.0.3");
+              add("192.168.0.4");
+          }
+      };
   }
   ```
 
   ```java
   public class FullRandom {
-    static Servers servers = new Servers();
-    static Random random = new Random();
-    
-    public static String go() {
-      int number = random.nextInt(servers.list.size());
-      
-    }
+      static Server server = new Server();
+      static Random random = new Random();
+      static int[] array = new int[4];
+  
+      public static int[] go() {
+          int number = random.nextInt(server.list.size());
+          array[number]++;
+          return array;
+      }
+      public static void main(String[] args) {
+          for (int i = 0; i < 1000; i++) {
+              go();
+          }
+          for (int i = 0; i < array.length; i++) {
+              System.out.println("192.168.0." +(i+1) + ":" + array[i]);
+          }
+      }
   }
+  ```
+
+- 加权随机
+
+  ```java
+  public class Server {
+      public HashMap<String,Integer> map = new HashMap<String,Integer>(){
+          {
+              put("192.168.0.1",2);
+              put("192.168.0.2",9);
+              put("192.168.0.3",3);
+              put("192.168.0.4",15);
+          }
+      };
+  }
+  ```
+
+  ```java
+  public class RandomWeight {
+      static Server server = new Server();
+      static Random random = new Random();
+  
+      public static String go() {
+          int weight_sum = server.map.values().stream().mapToInt(a -> a).sum();
+          int number = random.nextInt(weight_sum);
+          for (Map.Entry<String,Integer> item : server.map.entrySet()) {
+              if (item.getValue() > number) {
+                  return item.getKey();
+              }
+              number -= item.getValue();
+          }
+          return "";
+      }
+  
+      public static void main(String[] args) {
+          for (int i = 0; i < 10; i++) {
+              System.out.println(go());
+          }
+      }
+  }
+  
   ```
 
   
 
-- 最少连接
+- 轮询：完全轮询、加权轮询、平滑加权轮询。
+
+- 完全轮询
+
+  ```java
+  //Server参考 随机算法。
+  public class FullRound {
+      static Server server = new Server();
+      static int index;
+  
+      /**
+       * 1->2->3->4->1->2....
+       * @return
+       */
+      public static String go() {
+          if (index == server.list.size()) {
+              index = 0;
+          }
+          return server.list.get(index++);
+      }
+  
+      public static void main(String[] args) {
+          for (int i = 0; i < 10; i++) {
+              System.out.println(go());
+          }
+      }
+  }
+  
+  ```
+
+- 加权轮询
+
+  ```java
+  //Server参考 加权随机算法。
+  
+  ```
+
+  
 
 - 原地址散列
 

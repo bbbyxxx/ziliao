@@ -287,6 +287,45 @@ Java语言编译后会生成一个.class文件，反射就是通过字节码文�
 
 作用：反射机制指的是程序在运行时能够获取自身的信息。在Java中，只要给定类的名字，那么就可以通过反射机制来获取累的所有信息。
 
+### 负载均衡算法
+
+- 轮询
+  
+
+- 加权轮询
+
+- 随机
+
+  ```java
+  public class Servers {
+    public List<String> list = new ArrayList<>() {
+      {
+      	add("192.168.1.1");
+      	add("192.168.1.2");
+      	add("192.168.1.3");
+      }
+    };
+  }
+  ```
+
+  ```java
+  public class FullRandom {
+    static Servers servers = new Servers();
+    static Random random = new Random();
+    
+    public static String go() {
+      int number = random.nextInt(servers.list.size());
+      
+    }
+  }
+  ```
+
+  
+
+- 最少连接
+
+- 原地址散列
+
 ##  JVM
 
 下面将主要针对HotSpot VM，HotSpot是JVM规范的一种实现，是目前使用范围最广的Java虚拟机。

@@ -403,12 +403,76 @@ Java语言编译后会生成一个.class文件，反射就是通过字节码文�
 
   ```java
   //Server参考 加权随机算法。
+  public class RoundWeight {
+      static Server server = new Server();
+      static int index;
+  
+      public static String go() {
+          int sum_weight = server.map.values().stream().mapToInt((a -> a)).sum();
+          int number = (index++) % sum_weight;
+          for (Map.Entry<String,Integer> item : server.map.entrySet()) {
+              if (item.getValue() > number) {
+                  return item.getKey();
+              }
+              number -= item.getValue();
+          }
+          return "";
+      }
+  
+      public static void main(String[] args) {
+          int[] array = {0,0,0,0};
+          for (int i = 0; i < 10000; i++) {
+              switch (go()) {
+                  case "192.168.0.1" : array[0]++; break;
+                  case "192.168.0.2" : array[1]++; break;
+                  case "192.168.0.3" : array[2]++; break;
+                  case "192.168.0.4" : array[3]++; break;
+              }
+          }
+          for (int i = 0; i < array.length; i++) {
+              System.out.println("192.168.0." + (i+1) + "\t" + array[i]);
+          }
+      }
+  }
+  //观察大概率会导致一个或多个服务器的压力突然上升，有一个或者几个压力极小。
+  ```
+
+- 原地址散列
+
+  ```java
+  public class Hash {
+      public static String go(String client) {
+          int count = 20;
+          TreeMap<Integer,String> treeMap = new TreeMap<Integer,String>();
+          for (String s : new Server().list) {
+              for (int i = 0; i < count; i++) {
+                  treeMap.put((s + "--服务器--" + i).hashCode() , s);
+              }
+          }
+          int clientHash = client.hashCode();
+          SortedMap<Integer,String> sortedMap = treeMap.tailMap(clientHash);
+          Integer firstHash;
+          if (sortedMap.size() > 0) {
+              firstHash = sortedMap.firstKey();
+          }else {
+              firstHash = treeMap.firstKey();
+          }
+          String s = treeMap.get(firstHash);
+          return s;
+      }
+  
+      public static void main(String[] args) {
+          System.out.println(go("为啥要吃蝙蝠？"));
+          System.out.println(go("为什么"));
+          System.out.println(go("0"));
+          System.out.println(go("-110000"));
+          System.out.println(go("风雨交加"));
+      }
+  }
   
   ```
 
   
-
-- 原地址散列
 
 ##  JVM
 

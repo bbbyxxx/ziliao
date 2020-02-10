@@ -108,3 +108,28 @@ Redis通过创建快照来获得存储在内存里面的数据在某个时间点
 Redis通过MULTI、EXEC、WATCH等命令来实现事务功能。事务提供了一种将多个命令请求打包，然后一次性、按顺序地执行多个命令的机制，并且在事务执行期间，服务器不会中断事务而改去执行其他客户端的命令请求，它会将事务中的所有命令都执行完毕，然后去处理其他客户端的命令请求。
 
 在Redis中，事务总是具有原子性、一致性和隔离性，并且当Redis运行在某种特定的持久化模式下，事务也具有持久性。
+
+##  跳表实现
+
+###  跳跃表节点定义和跳跃表描述符定义
+
+```c
+typedef struct zskiplistNode {
+  robj * obj;											//member对象
+  double score;										//分值,level
+  struct zkiplistNode *bkackward; //后退指针
+	struct zskiplistLevel {
+    struct zskiplistNode *forward;	//前进指针
+		unsigned int span;  						//节点在该层和前向节点的距离
+  } level[];
+}zskiplistNode;
+
+typedef struct zskiplist {
+  struct zskiplistNode *header, * tail;		//头节点
+  unsigned long length;										//节点数量
+  int level;															//目前表内节点的最大层数
+}zskiplist;
+```
+
+###  新建跳跃表
+

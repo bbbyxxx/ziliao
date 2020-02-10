@@ -332,36 +332,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
     transient Set<Map.Entry<K,V>> entrySet;   // 可以通过该entrySet进行一个遍历
     transient int size;												// 当前map中的数据个数
     transient int modCount;										//可以理解为对map的操作个数，每当有put都会加1，对应有fail-fast机制，即当集合在遍历时，如果内容发生变化就会改变modCount的值，然后在遍历下一个元素时，会比较modCount是否为expectedmodCount，如果是，继续遍历，否则就抛出异常。
+    int threshold;														//表示当前容量大于该值会扩容
+    final float loadFactor;										//负载因子
 
-    /**
-     * The next size value at which to resize (capacity * load factor).
-     *
-     * @serial
-     */
-    // (The javadoc description is true upon serialization.
-    // Additionally, if the table array has not been allocated, this
-    // field holds the initial array capacity, or zero signifying
-    // DEFAULT_INITIAL_CAPACITY.)
-    int threshold;
-
-    /**
-     * The load factor for the hash table.
-     *
-     * @serial
-     */
-    final float loadFactor;
-
-    /* ---------------- Public operations -------------- */
-
-    /**
-     * Constructs an empty <tt>HashMap</tt> with the specified initial
-     * capacity and load factor.
-     *
-     * @param  initialCapacity the initial capacity
-     * @param  loadFactor      the load factor
-     * @throws IllegalArgumentException if the initial capacity is negative
-     *         or the load factor is nonpositive
-     */
+  /*----------------------------构造函数-----------------------------*/
     public HashMap(int initialCapacity, float loadFactor) {
         if (initialCapacity < 0)
             throw new IllegalArgumentException("Illegal initial capacity: " +
@@ -374,8 +348,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         this.loadFactor = loadFactor;
         this.threshold = tableSizeFor(initialCapacity);
     }
-
-  
+ 
     public HashMap(int initialCapacity) {
         this(initialCapacity, DEFAULT_LOAD_FACTOR);
     }
@@ -386,8 +359,10 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         this.loadFactor = DEFAULT_LOAD_FACTOR;
         putMapEntries(m, false);
     }
+/*------------------------------------------------------------------*/
 
-    final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
+  //将指定的map插入到当前map中
+  final void putMapEntries(Map<? extends K, ? extends V> m, boolean evict) {
         int s = m.size();
         if (s > 0) {
             if (table == null) { // pre-size
@@ -399,6 +374,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             }
             else if (s > threshold)
                 resize();
+            //遍历待插入map，插入到当前map
             for (Map.Entry<? extends K, ? extends V> e : m.entrySet()) {
                 K key = e.getKey();
                 V value = e.getValue();
@@ -407,19 +383,17 @@ public class HashMap<K,V> extends AbstractMap<K,V>
         }
     }
 
-    /**
-     * Returns the number of key-value mappings in this map.
-     *
-     * @return the number of key-value mappings in this map
-     */
+    
+  	//获取当前的node节点数量
     public int size() {
         return size;
     }
 
- 
+ 		//通过判断map是否为空。
     public boolean isEmpty() {
         return size == 0;
     }
+  	//获取value，将当前key的hash值计算出后传给getNode()方法，然后再接收传回的node，返回node.value
     public V get(Object key) {
         Node<K,V> e;
         return (e = getNode(hash(key), key)) == null ? null : e.value;
@@ -428,14 +402,18 @@ public class HashMap<K,V> extends AbstractMap<K,V>
    
     final Node<K,V> getNode(int hash, Object key) {
         Node<K,V>[] tab; Node<K,V> first, e; int n; K k;
+    		//首先判断table是否为null & 是否初始化 & 首节点是否为null
         if ((tab = table) != null && (n = tab.length) > 0 &&
             (first = tab[(n - 1) & hash]) != null) {
-            if (first.hash == hash && // always check first node
+          	//先判断首节点是否为待查找节点，通过hash值、hashcode、equals比较
+            if (first.hash == hash && 
                 ((k = first.key) == key || (key != null && key.equals(k))))
                 return first;
+          	//如果不是则判断是否为TreeNode，如果是按照红黑树的规则进行查找。
             if ((e = first.next) != null) {
                 if (first instanceof TreeNode)
-                    return ((TreeNode<K,V>)first).getTreeNode(hash, key);
+                    return ((TreeNode<K,V>)first).getTreeNode(hash, key);	
+              	//否则通过链表遍历的方式查找节点
                 do {
                     if (e.hash == hash &&
                         ((k = e.key) == key || (key != null && key.equals(k))))
@@ -443,15 +421,15 @@ public class HashMap<K,V> extends AbstractMap<K,V>
                 } while ((e = e.next) != null);
             }
         }
+      	//最后未找到会返回null
         return null;
     }
-
-   
+		//containsKey就是调用getNode方法，如果返回node则包含，否则为false
     public boolean containsKey(Object key) {
         return getNode(hash(key), key) != null;
     }
-
-    
+	
+  	//put  
     public V put(K key, V value) {
         return putVal(hash(key), key, value, false, true);
     }

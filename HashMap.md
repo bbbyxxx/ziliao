@@ -313,7 +313,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
   	* 右移4位  得到000011  或运算后: 111111  此时已经得到结果63，+1即为的整数次幂
   	* 右移8位  得到000000  或运算后: 111111
   	* 右移16位 得到000000  或运算后: 111111
-  	* 利用了2的整数幂-1后完全为1的特性，假设cap=32，那么减1后31，最高位为1的位置为第五位，所以2的5次方-->32
+  	* 利用了2的整数幂-1后完全为1的特性，假设cap=32，那么减1后31，最高位为1的位置为第五位，所以2的5次方-->32,*     * 因为总会将最高位的1传递给低位，使得低位数字都为1
   	*/
     static final int tableSizeFor(int cap) {
         int n = cap - 1;
@@ -327,33 +327,11 @@ public class HashMap<K,V> extends AbstractMap<K,V>
 
     /* ---------------- Fields -------------- */
 
-    /**
-     * The table, initialized on first use, and resized as
-     * necessary. When allocated, length is always a power of two.
-     * (We also tolerate length zero in some operations to allow
-     * bootstrapping mechanics that are currently not needed.)
-     */
-    transient Node<K,V>[] table;
-
-    /**
-     * Holds cached entrySet(). Note that AbstractMap fields are used
-     * for keySet() and values().
-     */
-    transient Set<Map.Entry<K,V>> entrySet;
-
-    /**
-     * The number of key-value mappings contained in this map.
-     */
-    transient int size;
-
-    /**
-     * The number of times this HashMap has been structurally modified
-     * Structural modifications are those that change the number of mappings in
-     * the HashMap or otherwise modify its internal structure (e.g.,
-     * rehash).  This field is used to make iterators on Collection-views of
-     * the HashMap fail-fast.  (See ConcurrentModificationException).
-     */
-    transient int modCount;
+		
+    transient Node<K,V>[] table;							// 实际实现。table数组
+    transient Set<Map.Entry<K,V>> entrySet;   // 可以通过该entrySet进行一个遍历
+    transient int size;												// 当前map中的数据个数
+    transient int modCount;										//可以理解为对map的操作个数，每当有put都会加1，对应有fail-fast机制，即当集合在遍历时，如果内容发生变化就会改变modCount的值，然后在遍历下一个元素时，会比较modCount是否为expectedmodCount，如果是，继续遍历，否则就抛出异常。
 
     /**
      * The next size value at which to resize (capacity * load factor).

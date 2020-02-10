@@ -115,8 +115,8 @@ Redis通过MULTI、EXEC、WATCH等命令来实现事务功能。事务提供了�
 
 ```c
 typedef struct zskiplistNode {
-  robj * obj;											//member对象
-  double score;										//分值,level
+	sds ele;
+  double score;										//分值
   struct zkiplistNode *bkackward; //后退指针
 	struct zskiplistLevel {
     struct zskiplistNode *forward;	//前进指针
@@ -131,5 +131,44 @@ typedef struct zskiplist {
 }zskiplist;
 ```
 
+###  node的创建
+
+```c
+zskiplistNode *zslCreateNode (int level, double score, sds ele) {
+  zskiplistNode *zn = zmalloc(sizeof(*zn) + level*sizeof(struct zskiplistLevel));
+  zn->score = score;
+  zn->ele = ele;
+  return zn;
+}
+```
+
+
+
 ###  新建跳跃表
 
+```c
+zskiplist * zslCreate(void) {
+  int j;
+  zskiplist *zsl;
+  
+  zsl = zmalloc(sizeof(*zsl));
+  zsl->level = 1;
+  zsl->length = 0;
+  
+  
+  //创建一个层数为32，分值为0，成员对象为null的表头节点
+  zsl->header = zslCreateNode(ZSKIPLIST_MAXLEVEL, 0, NULL);
+  for (j = 0;j < ZSKIPLIST_MAXLEVEL; j++) {
+    zsl->header->level[j].forward = NULL;
+    zsl->header->level[j].span = 0;
+  }
+  
+  zsl->header->backward = NULL;
+  zsl->tail = NULL;
+  return zsl;
+}
+```
+
+###  插入新节点
+
+1.查找每一层的插入点，所谓插入点指新节点插入后作为新节点前继的节点，redis用数组来句路

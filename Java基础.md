@@ -308,6 +308,25 @@ add(index，element）先检查index是否越界，再检查index是否等于siz
 
 get首先判断是否越界，因为它有头节点和尾节点，所以会判断是从头节点开始遍历还是从尾节点开始遍历，判断方法是用index和size/2比，如果小于的话从first遍历，否则从last开始遍历。
 
+###  TreeMap
+
+TreeMap 是一个有序的key-value集合，基于红黑树的NavigableMap。该映射根据其键的自然顺序进行排序，或者根据创建时提供的Comparator进行排序，取决于构造方法。
+
+```java
+TreeMap<Integer,Integer> treeMap = new TreeMap<>(new Comparator<Integer>(){
+  @Override
+  public int compare(Integer o1, Integer o2) {
+    return o1 - o2;
+  }
+});
+```
+
+TreeMap底层是红黑树，也是一颗自平衡的排序二叉树，就可以保证快速检索指定节点，插入、删除、遍历时间复杂度都为O(lgN)。
+
+###  LinkedHashMap
+
+是HashMap的一个子类，保证了记录的插入顺序，在用Iterator遍历的时候，先得到的记录肯定是先插入的，遍历时会比HashMap慢，LinkedHashMap的遍历速度只和实际数据有关，和容量无关，而HashMap的遍历速度和它的容量有关。
+
 ##  Java高级部分
 
 ###  线程和进程的区别

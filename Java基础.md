@@ -164,7 +164,7 @@ Java程序在执行子类的构造方法之前，如果没有用super()来调用
 ###  finla、finally、finalize的区别
 
 - final用于声明属性、方法和类，表示属性不可变，方法不可覆盖，类不可继承
-- finally是异常处理语句结构的一部分，表示总是执行
+- finally是异常处理语句结构的一部分，表示在该异常体系中总是执行
 - finalize是Object类中的一个方法，在垃圾收集器执行的时候会调用被回收的此方法，可以覆盖此方法提供垃圾收集时的其它资源回收（尽量不要覆盖）
 
 ###  Java语言如何进行异常处理？关键字分别代表什么意义？
@@ -209,7 +209,90 @@ Collections是针对集合类的一个帮助类，它提供如下三类方法：
 
 Throwable是所有异常的父类，它有两个直接的子对象，分别是Error和Exception。其中Error是指我们无法处理的错误，比如说虚拟机异常、虚拟机内存溢出等无法控制的错误。Exception分为编译时异常和运行时异常，编译时常见的比如说ClassNotFoundException、IOException、SQLException等，运行时异常常见的就是空指针异常、数组越界、除0等在运行时才可以发现的异常。
 
-我们必须对编译时异常进行处理，否则程序无法运行。但对运行时异常可以不处理，那么出现运行时异常后要么是线程终止，要么是主程序终止，如果不想终止，则必须捕捉所有的运行时异常
+我们必须对编译时异常进行处理，否则程序无法运行。但对运行时异常可以不处理，那么出现运行时异常后要么是线程终止，要么是主程序终止，如果不想终止，则必须捕捉所有的运行时异常。
+
+####  异常处理关键字
+
+try：用来监听所有可能出现异常的代码。
+
+catch：用来匹配出现的异常，并执行相应的处理措施，注意匹配时一定要注意层次关系。
+
+finally：代表在该异常体系中总是执行。
+
+throws：用于声明该方法可能抛出的异常。
+
+throw：抛出异常，后面不可再跟代码。
+
+####  finally一定会执行吗
+
+1. 在执行异常处理代码之前程序就已经返回
+
+   ```java
+   public static boolean getTrue(boolean flag) {
+     if(flag) return flag;
+     try {
+       flag = true;
+       return flag;
+     }finally {
+       System.out.println("我一定会被执行？");
+     }
+   }
+   //当flag为true时不会被执行
+   ```
+
+2. 在执行异常代码之前抛出异常
+
+   ```java
+   public static boolean getTrue(boolean flag) {
+     int i = 1/0;
+     try {
+       flag = true;
+       return flag;
+     } finally {
+       System.out.println("我是一定会执行的代码？");
+     }
+   }
+   //这里会抛出异常，原理同1，只有当finally相对应的try执行的情况下，finally才会执行
+   ```
+
+3. finally之前执行了System.exit()
+
+   ```java
+   public static boolean getTrue(boolean flag) {
+     try {
+       flag = true;
+       System.exit(1);
+       return flag;
+     } finally {
+       System.out.println("我是一定会执行的代码？");
+     }
+   }
+   //System.exit是用于结束当前正在运行中的java虚拟机，参数为0代表程序正常退出，非0代表非正常退出。
+   ```
+
+4. 所有后台线程终止时，后台线程会突然终止
+
+   ```java
+   public static void main(String[] args) {
+     Thread t1 = new Thread(new Runnable(){
+       @Override
+       public void run() {
+         try {
+           Thread.sleep(5);
+         }catch (Excepetion e) {
+           
+         }finally {
+           System.out.println("我是一定会执行的代码？");
+         }
+       }
+     });
+     t1.setDaemon(true);
+     t1.start();
+     System.out.println("我是主线程的代码，主线程是非后台线程");
+   }
+   ```
+
+   
 
 ###  ArrayList
 

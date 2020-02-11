@@ -385,3 +385,13 @@ public class NIOClient {
 
 缺点：多线程数据共享和访问比较复杂，reactor处理所有的事件的监听和响应，在单线程运行，在高并发场景容易出现性能瓶颈。
 
+###  主从Reactor多线程
+
+1. Reactor主线程MainReactor对象通过select监听连接事件，收到事件后通过Acceptor处理连接事件。
+2. 当Acceptor处理连接事件后，MainReactor将连接分配给SubReactor。
+3. SubReactor将连接加入到连接队列进行监听，并创建handler进行各种事件处理。
+4. 当有新事件发生时，SubReactor就会调用对应的handler处理。
+5. handler通过read读取数据，分发给后面的worker线程处理。
+6. worker线程池分配独立的workder线程进行业务处理，并返回结果。
+7. handler收到响应的结果后，再通过send将结果返回给client。
+

@@ -387,6 +387,8 @@ public class NIOClient {
 
 ###  主从Reactor多线程
 
+这种模型主要有Nginx主从Reactor多进程模型，Memcached主从多线程，Netty主从多线程模型等。
+
 1. Reactor主线程MainReactor对象通过select监听连接事件，收到事件后通过Acceptor处理连接事件。
 2. 当Acceptor处理连接事件后，MainReactor将连接分配给SubReactor。
 3. SubReactor将连接加入到连接队列进行监听，并创建handler进行各种事件处理。
@@ -394,4 +396,31 @@ public class NIOClient {
 5. handler通过read读取数据，分发给后面的worker线程处理。
 6. worker线程池分配独立的workder线程进行业务处理，并返回结果。
 7. handler收到响应的结果后，再通过send将结果返回给client。
+8. Reactor主线程可以对应多个Reactor子线程，可以关联多个SubReactor。
 
+优点：父线程与子线程的数据交互简单、职责明确，父线程只需要接收连接，子线程完成后续业务处理。
+
+缺点：编程复杂度较高。
+
+###  Reactor模式优点
+
+- 响应快：不必为单个同步时间所阻塞，虽然Reactor本身是同步的。
+- 可以最大程度避免复杂的多线程及同步问题，并且避免了多线程/进程的切换开销。
+- 扩展性好：可以方便的通过增加Reactor实例个数来充分利用CPU资源。
+- 复用性好：Reactor模型本身与具体事件处理逻辑无关，具有很高的复用性。
+
+##  Netty工作原理
+
+1. Netty抽象出两组线程池NIOEventLoopGroup，BossGroup专门接收客户端的连接，WorkerGroup专门负责网络的读写。
+2. NIOEventLoopGroup相当于一个事件循环组，这里面有多个事件循环，每一个事件循环是NIOEventLoop。
+3. NIOEventLoop表示一个不断循环的执行处理任务的线程，每个NIOEventLoop都有一个selector，用于监听绑定在其上的socket的网络通讯。
+4. NIOEventLoopGroup可以有多个线程，即可以含有多个NIOEventLoop。
+5. 每个Boss NIOEventLoop循环执行的步骤有三步
+   - 轮询accpet事件
+   - 处理accept事件，与client建立连接，生成NIOSocketChannel，并将其注册到某个worker NIOEventLoop上的selector
+   - 处理任务队列的任务，即runAllTasks
+6. 每个Worker NIOEventLoop循环执行的步骤
+   - 轮询read、write事件
+   - 处理IO事件，在对应NIOSocketChannel处理
+   - 处理任务队列的任务，即runAllTasks
+7.   每个Worker NIOEventLoop处理业务时，会使用pipeline（管道），pipeline中包含了channel，即通过pipeline可以获取到对应通道，管道中维护了很多的处理器。

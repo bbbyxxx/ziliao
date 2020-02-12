@@ -424,3 +424,37 @@ public class NIOClient {
    - 处理IO事件，在对应NIOSocketChannel处理
    - 处理任务队列的任务，即runAllTasks
 7.   每个Worker NIOEventLoop处理业务时，会使用pipeline（管道），pipeline中包含了channel，即通过pipeline可以获取到对应通道，管道中维护了很多的处理器。
+
+##  Future-Listentr机制
+
+1. 当Future对象刚刚创建时，处于非完成状态，调用者可以通过返回的ChannelFuture来获取操作执行的状态，注册监听函数来执行完成后的操作。
+2. 常见有如下操作
+   - isDone：判断当前操作是否完成
+   - isSuccess：判断当前操作是否成功
+   - getCause：获取当前操作失败的原因
+   - isCancelled：判断当前操作是否被取消
+   - addListener：注册监听起，当操作已完成，将会通知指定的监听器；如果Future对象已完成，则通知指定的监听器
+
+##  Netty核心模块
+
+###  Bootstrap、ServerBootstrap
+
+Bootstrap意思是引导，一个Netty应用通常由一个Bootstrap开始，主要作用是配置整个Netty程序，串联各个组件，Netty中Bootstrap类是客户端程序的启动引导类，Server是服务端启动引导类。
+
+###  Channel
+
+- Netty网络通信的组件，能够用于执行网络I/O操作
+- 通过Channel可获得当前网络连接的通道的状态
+- 通过Channel可获得网络连接的配置参数
+- Channel提供异步的网络I/O操作，调用立即返回一个ChannelFuture实例，通过注册监听器到ChannelFuture上，可以I/O操作成功、失败或取消时回调通知调用方
+- 支持关联I/O操作与对应的处理程序
+- 不同协议、不同的阻塞类型的连接都有不同的Channel类型与之对应。比如
+  - NioSocketChannel：异步的客户端Tcp Socket连接
+  - NioServerSocketChannel：异步的服务器端Tcp Socket连接
+  - NioDatagramChannel：异步的UDP连接
+  - NioSctpChannel：异步的客户端Sctp连接
+
+###  Selector
+
+1. Netty基于Selector对象实现I/O多路复用，通过Selector一个线程可以监听多个连接的Channel事件
+2. 

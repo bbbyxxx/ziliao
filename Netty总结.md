@@ -524,4 +524,15 @@ Netty默认提供了对Protobuf的支持，也可以通过扩展Netty的编解�
 
 零拷贝就是在操作数据时，不需要将数据buffer从一个内存区域拷贝到另一个内存区域。少了一次内存的拷贝，CPU的效率就得以提升。在OS层面上就是避免在用户态与内核态之间来回拷贝数据。Netty的Zero-copy完全是在用户态的，更多的偏向于优化数据操作。
 
-- 
+普通方式需要四次数据拷贝和四次上下文切换：
+
+> 1. 数据从磁盘读取到内核的read buffer
+> 2. 数据从内核缓冲区拷贝到用户缓冲区
+> 3. 数据从用户缓冲区拷贝到内核的socket buffer
+> 4. 数据从内核的socket buffer拷贝到网卡接口的缓冲区
+>
+> 第二、三步是没有必要的，通过Java的FileChannel.transferTo方法，可以避免上面两次多余的拷贝。
+
+- Netty的接收和发送ByteBuf采用Direct Buffers，使用堆外直接内存进行Socket读写，不需要进行字节缓冲区的二次拷贝。如果使用传统的堆内存进行socket读写，JVM会将堆内存Buffer拷贝一份到直接内存中，然后才写入Socket中。相比于堆外直接内存，消息在发送过程中多了一次缓冲区的内存拷贝。
+- Netty提供了组合buffer对象，可以聚合多个ByteBuffer对象，用户可以像操作一个Buffer那样方便的对组合Buffer进行操作，避免了传统通过内存拷贝的方式将几个小buffer合并成一个大的buffer。
+- Netty文件传输采用了transferTo方法，可以直接将文件传输区的数据发送到目标Channel，避免了传统通过循环write方式导致的内存拷贝问题。

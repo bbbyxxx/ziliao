@@ -496,3 +496,18 @@ Remote Procedure Call，远程过程调用，是一个计算机通信协议，�
 9. client得到结果
 
 RPC的目标就是将2--8这些步骤都封装起来，用户无需关心这些细节，可以像调用本地方法一样即可完成远程服务调用。
+
+##  Netty执行流程
+
+1. 创建ServerBootStrap实例
+2. 设置并绑定Reactor线程池：EventLoopGroup，new两个NioEventLoopGroup，EventLoop就是处理所有注册到本线程的Selector上面的channel
+3. 设置并绑定服务端的Channel，NioServerSocketChannel
+4. 创建处理网络事件的ChannelPipeline，并绑定对应的handler
+5. 绑定并启动监听端口
+6. 当轮询到准备就绪的channel后，由Reactor线程：NioEventLoop执行pipline中的方法，最终调度并执行channelHandler
+
+##  Netty高性能体现在哪些方面
+
+###  传输
+
+IO模型在很大程度上决定了框架的性能，相比于BIO，Netty采用异步通信模式，因为NIO一个线程可以并发处理N个客户端连接和读写操作，这从根本上解决了传统同步阻塞IO一连接一线程模型

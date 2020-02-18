@@ -389,6 +389,48 @@ public enum State {
 
 不同点：lock有比synchronized更精确的线程语义和更好的性能。synchronized会自动释放锁，而lock一定要求程序员手工释放。
 
+###  synchronized关键字
+
+同步代码块，解决线程并发访问数据源造成的数据安全问题。
+
+使用方式：
+
+```java
+public void method() {
+  //修饰代码块
+  synchronized (this) {
+    //...
+  }
+}
+```
+
+```java
+//修饰方法
+public synchronized void method() {
+  //...
+}
+```
+
+```java
+//修饰静态方法
+public synchronized static void method() {
+  //...
+}
+```
+
+```java
+//修饰类
+class DemoClass {
+  public void method() {
+    synchronized(DemoClass.class) {
+      //...
+    }
+  }
+}
+```
+
+
+
 ###  volatile
 
 通俗来说就是一个字段被volatile修饰，java的内存模型确保所有的线程看到的这个变量值是一致的，但是不能保证多线程的原子操作，这就是所谓的线程可见性。

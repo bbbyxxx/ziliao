@@ -387,6 +387,7 @@ public enum State {
 
 - 两者都是可重入锁，自己可以再次获取自己的内部锁，一个线程获得了某个对象的锁，此时这个对象锁还没有释放，当其再次想要获取这个对象的锁的时候还可以获取的，如果不可重入的话就会造成死锁。
 - synchronized是依赖于JVM的，ReentrantLock是JDK层面实现的，需要手动加锁解锁。
+- ReentrantLock增加了一些高级功能，可以使用lock.lockInterruptibly()来使正在等待的线程放弃等待，改为处理其他事情；公平锁，默认为非公平。
 
 ###  synchronized关键字
 

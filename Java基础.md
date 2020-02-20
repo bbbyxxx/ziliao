@@ -173,6 +173,11 @@ Java通过面向对象的方法进行异常处理，把各种不同的异常进�
 
 用try执行一段程序，如果出现异常，系统会抛出一个异常，这时你可以通过它的类型来catch它，或finally由缺省处理器来处理。throws用来标明一个成员函数可能抛出的各种异常，throw用来明确地抛出一个异常。
 
+###  ArrayList和Vector的区别
+
+- Vector是线程安全的，ArrayList线程非安全
+- ArrayList和Vector都可以设置初始的空间大小，Vector还可以设置增长的空间大小，而ArrayList没有提供设置增长空间的方法
+
 ###  ArrayList和LinkedList的区别，如果一直在ArrayList的尾部添加元素，用哪个效率高？
 
 ArrayList是采用数组实现的，查找效率比LinkedList高，LinkedList采用双向循环链表实现，插入和删除的效率比ArrayList高。

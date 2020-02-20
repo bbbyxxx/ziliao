@@ -53,7 +53,7 @@ final float loadFactor;
 */
 ```
 
-![HashMap数据结构](/Users/a/Desktop/Java-victor/images/HashMap数据结构.png)
+![HashMap数据结构](/Users/a/Desktop/Java-victor/images/Java/HashMap数据结构.png)
 
 ###  key的hash
 

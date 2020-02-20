@@ -377,7 +377,7 @@ public enum State {
 }
 ```
 
-![线程状态](/Users/a/Desktop/Java-victor/images/线程状态.png)
+![线程状态](/Users/a/Desktop/Java-victor/images/高并发/线程状态.png)
 
 ###  如何保证线程安全
 

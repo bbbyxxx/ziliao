@@ -88,7 +88,7 @@ ByteCache、ShortCache、LongCache、CharacterCache
 
 ###  数组(Array)和列表(ArrayList)有什么区别？
 
-- Array可以包含基本类型和对象类型，List只能包含对象类型
+- Array可以包含基本类型和引用类型，List只能包含对象类型
 - Array大小是固定的，ArrayList大小是动态变化的（ArrayList初始化容量为10，每次扩容1.5倍 10->15->22...)
 - ArrayList中提供了更多的方法和特性，比如add()、addfirst()等等
 - ArrayList的底层实现就是一个动态的Array

@@ -383,6 +383,12 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 3. newSingleThreadPool：创建只有一个线程的线程池。
 4. newScheduleThreadPool：创建一个定长的线程池，而且支持定时的以及周期性的任务执行。
 
+###  线程池是什么时候创建线程的？
+
+1. 在任务提交的时候创建线程
+2. 每一个任务先放到队列中
+3. 当worker中的runWorker()一个任务完成后，会取下一个任务
+
 ###  线程池有什么好处
 
 - 降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。

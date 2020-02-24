@@ -33,17 +33,16 @@ String是简单的key-value类型，value不仅仅是String，还可以是数据
 
 Hash是一个String类型的field和value的映射表，Hash特别适合用于存储对象，后续操作的时候，可以直接仅仅修改这个对象中的某个字段的值。
 
->key=JavaUserVictor
->
->value={
->
->"id" : 1 ,
->
->"name" : "Victor",
->
->"age" : 20 
->
->}
+```c
+key=JavaUserVictor
+value={
+"id" : 1 ,
+"name" : "Victor",
+"age" : 20 
+}
+```
+
+
 
 ###  List
 

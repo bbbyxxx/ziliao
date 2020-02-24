@@ -680,8 +680,7 @@ public class HashMap<K,V> extends AbstractMap<K,V>
             keySet = ks;
         }
         return ks;
-    }
-        
+    } 
 }
 
 ```

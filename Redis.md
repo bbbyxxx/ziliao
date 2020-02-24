@@ -42,8 +42,6 @@ value={
 }
 ```
 
-
-
 ###  List
 
 常用命令：lpush、rpush、lpop、rpop、lrange等。

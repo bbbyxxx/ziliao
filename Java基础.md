@@ -220,6 +220,14 @@ final void checkForComodification() {
 
 为了避免fail-fast，可以使用迭代器的remove方法，或者使用juc包下的类来替代。
 
+###  List、Map、Set三个接口，存取元素时，各有什么特点？
+
+List与Set具有相似性，它们都是单列元素的集合，所以，它们有一个共同的父接口Collection。Set里不允许有重复的元素，add方法里会有boolean，如果没有某个元素，返回true，此时就可成功加入，否则不能加入，Set取元素时不能保证和插入的顺序相等，只能通过Iterator接口取得所有的元素，再统一遍历各个元素。
+
+List是有先后顺序的集合，FIFO，一个对象可以反复存储进List中，并且可以进行插队，这个插队并不是说这个对象本身存储进了集合中，而是在集合中用一个索引变量指向这个对象，当这个对象被add多次时，即相当于集合中有多个索引指向了这个对象。
+
+Map与它两不同，Map是双列的集合，其中有put方法，不能存储的重复的key，通过hashCode和equals比较是否相同。
+
 ###  ArrayList和Vector的区别
 
 - Vector是线程安全的，ArrayList线程非安全

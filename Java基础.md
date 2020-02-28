@@ -204,6 +204,27 @@ Java通过面向对象的方法进行异常处理，把各种不同的异常进�
 
 用try执行一段程序，如果出现异常，系统会抛出一个异常，这时你可以通过它的类型来catch它，或finally由缺省处理器来处理。throws用来标明一个成员函数可能抛出的各种异常，throw用来明确地抛出一个异常。
 
+###  JDK中的设计模式
+
+- Singleton：Runtime
+
+  ```java
+  /**
+  Every Java application has a single instance of Class Runntime that allows the application to interface with the environment in which the application is running.
+  */
+  private static Runntime currentRuntime = new Runtime(); //懒汉式
+  ```
+
+- Builder：StringBuilder，StringBuilder可以扩展原对象，不同的字符串也可以按照不同的顺序拼接
+
+- Factory：ThreadPool，线程池中由线程工厂创建线程，一般用默认的
+
+- Adapter：Arrays.asList，将数组转换为list，将一个类的接口转换为客户希望的另一个接口，使得原本接口不兼容而不能一起工作的那些类可以一起工作
+
+- Iterator迭代器模式：java.util.Iterator，提供一个一致的方法来顺序访问集合中的对象，这个方法与底层的集合的具体实现无关
+
+- FlyWeight享元模式：String，享元模式尝试重用现有的同类对象，如果未找到匹配的对象，则创建新对象，--->String的常量池
+
 ###  什么是fail- -fast
 
 fail-fast机制时Java集合中的一种错误机制。当多个线程对同一个集合的内容进行操作时，就可能会产生fail-fast事件。

@@ -239,3 +239,73 @@ zskiplist * zslCreate(void) {
 采用一致性hash算法的分布式集群中将新的机器加入，其原理是通过使用与对象存储一样的hash算法将机器也映射到环中（对机器的hash值是采用机器的ip或者机器唯一的别名作为输入值），然后以顺时针的方向计算，将所有对象存储到离自己最近的机器中。
 
 但是这种情况也有他的缺点：如果节点hash值在hash环上分布不均匀，会导致缓存数据在每个节点不均匀分配；节点增加或减少，需要重新分布的缓存数据也不能均匀分配。此时就要采用虚拟节点，就要将原来的某个节点进行拆分再映射，此时计算就应该是机器的IP或者唯一的别名+序号作为输入值，再均衡分布。
+
+```java
+public class ConsistentHash<T> {
+    private static String[] servers = {"192.168.0.1:8001","192.168.0.2:8001","192.168.0.3:8001","192.168.0.4:8001"};
+  	//真实节点列表，因为服务器上下线很正常，所以用链表
+    private static List<String> realNodes = new LinkedList<String>();
+  	//key为虚拟节点的hash值，value为服务器名称
+    private static SortedMap<Integer, String> virtualNodes = new TreeMap<Integer, String>();
+
+  	//一个真实节点有8个虚拟节点
+    private static final int V_NODE_NUM = 8;
+    static {
+        for (int i = 0; i < servers.length; i++) {
+            realNodes.add(servers[i]);
+        }
+
+        for (String string : realNodes) {
+            for (int i = 0; i < V_NODE_NUM; i++) {
+                String vNodeName = string + "&&VN" + i;
+                int hash = getHash(vNodeName);
+                System.out.println("虚拟节点[" + vNodeName + "]被添加，hash值为:" + hash);
+                virtualNodes.put(hash, vNodeName);
+            }
+        }
+    }
+
+    /**
+     * FNV1_32_HASH算法
+     * @param str
+     * @return
+     */
+    private static int getHash(String str) {
+        final int p = 16777619;
+        int hash =  (int) 2166136261L;
+        for(int i = 0; i< str.length(); i++)
+            hash = (hash ^ str.charAt(i)) * p;
+        hash += hash << 13;
+        hash ^= hash >> 7;
+        hash += hash << 3;
+        hash ^= hash >> 17;
+        hash += hash << 5;
+        // 如果算出来的值为负数则取其绝对值
+        if (hash < 0)
+            hash = Math.abs(hash);
+        return hash;
+    }
+
+  	//应该路由到那台服务器
+    private static String getServer(String node) {
+        int hash = getHash(node);
+      	//得到大于该hash值的所有map
+        SortedMap<Integer, String> subMap = virtualNodes.tailMap(hash);
+        Integer i = subMap.firstKey();
+      	//获取虚拟节点
+        String vNodeName = subMap.get(i);
+        System.out.println(vNodeName);
+      	//截取真实节点
+        return vNodeName.split("&&VN")[0];
+    }
+
+
+    public static void main(String[] args) {
+        String[] nodes = { "127.0.0.1:1111", "221.226.0.1:2222", "102.211.0.122:3333" , "238.226.0.1:2222", "221.211.0.122:3333"};
+        for (int i = 0; i < nodes.length; i++)
+            System.out.println("[" + nodes[i] + "]的hash值为" + getHash(nodes[i]) + ", 被路由到结点[" + getServer(nodes[i]) + "]");
+    }
+}
+
+```
+

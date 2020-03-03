@@ -47,7 +47,7 @@ mandatory和mmediate 是chann.basicPublish方法中的两个参数，都有当�
 
 ###  备份交换器
 
-若匹配不到队列，就会发送给备份交换器，可以将未被路由的消息存储在MQ中，再再需要的时候去处理这些消息。可以通过在声明交换器（channel.exchangeDeclare方法)的时候添加alternate-exchange参数来实现。
+若匹配不到队列，就会发送给备份交换器，可以将未被路由的消息存储在MQ中，再在需要的时候去处理这些消息。可以通过在声明交换器（channel.exchangeDeclare方法)的时候添加alternate-exchange参数来实现。
 
 ##  Phase 3
 

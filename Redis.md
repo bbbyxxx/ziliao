@@ -194,6 +194,7 @@ zskiplist * zslCreate(void) {
        if(reenlock.trylock()) {
          result = getDataFromMysql(key);
          if(result != null) {
+           //放入缓存中
            setDataToCache(key, result);
          }
          reenlock.unlock();

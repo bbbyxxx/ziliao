@@ -440,6 +440,21 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 3. newSingleThreadPool：创建只有一个线程的线程池。
 4. newScheduleThreadPool：创建一个定长的线程池，而且支持定时的以及周期性的任务执行。
 
+###  线程池参数
+
+```java
+public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BolckingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectExecutionHandler handler);
+/*
+corePoolSize : 指定了线程中的线程数量
+maximumPoolSize : 指定了线程池中的最大线程数量
+keepAliveTime : 当线程池线程数量超过corePoolSize时，多余的空闲线程的存活时间
+unit : keepAliveTime的单位
+workQueue : 任务队列，被提交但尚未被执行的任务
+threadFactory : 线程工厂，用于创建线程，一般用默认的
+handler : 拒绝策略，当任务太多时来不及处理，如何拒绝任务
+*/
+```
+
 ###  线程池是什么时候创建线程的？
 
 1. 在任务提交的时候创建线程

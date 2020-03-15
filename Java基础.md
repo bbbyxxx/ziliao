@@ -445,14 +445,39 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 ```java
 public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BolckingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectExecutionHandler handler);
 /*
-corePoolSize : 指定了线程中的线程数量
-maximumPoolSize : 指定了线程池中的最大线程数量
+corePoolSize : 指定了线程池中的核心线程数量，没有添加任务时，线程数量为0，当达到核心线程数时，无论是否向池子里提不提交任务，线程池里至少会保持核心线程数量。 假设设定核心为2，添加4个任务，当任务执行完成后，线程池里存活的线程为2。
+maximumPoolSize : 指定了线程池中的最大线程数量，是在已经达到核心线程池参数并且任务队列已经满的情况下，才去判断该参数。     当任务提交时，如果线程数量达到了核心线程数，并且任务队列已满，不能再向任务队列中添加任务时，这时会检查任务是否达到了最大线程数，如果未达到，则创建新线程执行任务，否则执行拒绝策略。
 keepAliveTime : 当线程池线程数量超过corePoolSize时，多余的空闲线程的存活时间
 unit : keepAliveTime的单位
 workQueue : 任务队列，被提交但尚未被执行的任务
 threadFactory : 线程工厂，用于创建线程，一般用默认的
 handler : 拒绝策略，当任务太多时来不及处理，如何拒绝任务
 */
+
+
+public void execute (Runnable command) {
+  if (command == null) {
+    throw new NullPointerException();
+  }
+  int c = ctl.get();
+  if (workerCountOf(c) < corePoolSize) {
+    if (addWorker(command, true)) {
+      return;
+    }
+    c = ctl.get();
+  }
+  if (isRunning(c) && workQueue.offer(command)) {
+    int recheck = ctl.get();
+    if (! Running(check) && remove(command)) {
+      reject(command);
+    }else if (workerCountOf(recheck) == 0) {
+      addWorker(null, false);
+    }
+  }
+  else if (! addWorker(command, false)) {
+    reject(command);
+  }
+}
 ```
 
 ###  线程池是什么时候创建线程的？

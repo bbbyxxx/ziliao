@@ -1070,6 +1070,26 @@ Mix GC不仅进行正常的新生代垃圾收集，同时也回收部分后台�
 2. 持久代溢出
    通常由于持久代设置过小，动态加载了大量Java类而导致溢出。
 
+###  GC参数
+
+-Xms128M : 设置Java程序启动时堆内存128M（默认为物理内存1/64，小于1G）
+
+-Xmx256M : 设置最大堆内存256M，超出后会出现OOMError（默认为物理内存1/64，小于1G）
+
+-XX:Max Tenuring Threshold = 15; 对象进入老年代的年龄(Parallel是15，CMS是16)
+
+-XX:+UseSerialGc 在年轻代和老年代使用串行回收器
+
+-XX:ParallelGCThreads=4 设置用于垃圾回收的线程数为4（默认与CPU数量相同）
+
+-XX:+UseConcMarkSweepGC 使用CMS收集器（老年代）
+
+-XX:G1HeapRegionSize=16M 使用G1收集器时设置每个Region的大小
+
+-XX:PrintGCDetails 打印GC信息
+
+-XX:+PrintHeapAtGC 每次GC时，都会打印日志
+
 ###  优化JVM
 
 优化JVM一定要抓住两点。第一，怎样缩短单次GC的时间；第二，怎样缩短GC频率

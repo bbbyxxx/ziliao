@@ -10,7 +10,7 @@
 
 4. Netty模型
 
-   ![Netty模型](/Users/a/Desktop/Java-victor/images/Netty/Netty模型.png)
+   ![Netty模型](images/Netty/Netty模型.png)
 
 ##  优点
 
@@ -137,7 +137,7 @@ public class BIOServer {
 
 ##  Netty三大组件
 
-![Netty三大组件](/Users/a/Desktop/Java-victor/images/Netty/Netty三大组件.png)
+![Netty三大组件](images/Netty/Netty三大组件.png)
 
 - 每个Channel都会对应一个Buffer
 - Selector对应一个线程，一个线程对应多个Channel

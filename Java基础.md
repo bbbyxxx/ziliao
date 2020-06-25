@@ -512,7 +512,7 @@ public enum State {
 }
 ```
 
-![线程状态](/Users/a/Desktop/Java-victor/images/高并发/线程状态.png)
+![线程状态](images/高并发/线程状态.png)
 
 ###  如何保证线程安全
 
@@ -617,7 +617,7 @@ Mark word记录了对象和锁有关的信息，当某个对象被synchronized�
 
 Java线程之间的通信由Java内存模型（JavaMemoryModel）控制，JMM决定一个线程对共享变量的修改何时对另外一个线程可见。JMM定义了线程与主内存的抽象关系：线程之间的变量存储在主内存（Main Memory）中，每个线程都有一个私有的本地内存（Local Memory）保存着共享变量的副本。
 
-![volatile](/Users/a/Desktop/Java-victor/images/Java/volatile.png)
+![volatile](images/Java/volatile.png)
 
 如果线程A与线程B通信：
 
@@ -1162,7 +1162,7 @@ Mix GC不仅进行正常的新生代垃圾收集，同时也回收部分后台�
 
 ###  类加载器
 
-![类加载器](/Users/a/Desktop/Java-victor/images/Java/类加载器.png)
+![类加载器](images/Java/类加载器.png)
 
 - 启动类加载器：Bootstrap ClassLoader，负责加载存放在jdk/jre/lib（jdk代表jdk的安装目录，下同）下，如r t.jar，或被Xbootclasspath参数指定的路径中的，并且能被虚拟机识别的类库。
 - 扩展类加载器：Extension ClassLoader，负载加载jdk/jre/lib/ext目录中，或者由java.ext.dirs系统变量指定的路径中的所有类库，开发者可以直接使用扩展类加载器。

@@ -162,3 +162,44 @@ ps：幂等性：一个事务不管执行一次还是多次，得到的结果都
 
 ![cache](images/Http/cache.png)
 
+##  HTTP首部
+
+![http_header](images/Http/http_header.png)
+
+###  为什么不用Authorization来进行用户登陆识别？
+
+请求过程：
+
+1. 浏览器向xxx.com发起了一条请求
+2. 服务器返回401Login Require响应码，并添加www-Authentication首部，要求用户登陆
+3. 当用户输入账号密码后，就会给它添加一个Authentication首部，来说明用户名和密码
+
+但是登陆多个web站点是繁琐的，当从一个站点到另一个站点浏览的时候，会要求再次登陆，这样就比较繁琐了。
+
+###  Cookie的类型
+
+####  会话Cookie
+
+会话Cookie是一种临时Cookie，它记录了用户访问站点时的设置和偏好，用户退出浏览器时，会话Cookie就被删除了。
+
+####  持久Cookie
+
+持久Cookie的生存时间更长一些，它们存储在硬盘上，浏览器退出，计算机重启它们仍然存在，通常用持久Cookie维护某个用户会周期性访问的站点的配置文件或登录名。
+
+它两的区别在于有没有设置过期时间，如果设置了Discard参数，或者没有设置Expires或Max-Age参数来说明扩展的过期时间，那么这个Cookie就是一个会话Cookie。
+
+###  Cookie是如何工作的
+
+![cookie_domain](images/Http/cookie_domain.png)
+
+用户首次访问Web站点时，Web服务器对用户一无所知，会在首部添加Set-Cookie来给用户加入身份信息，当用户再次访问时，就会有了用户信息。
+
+###  Cookie的域属性
+
+产生cookie的服务器可以向set-cookie响应首部添加一个Domain属性来控制哪些站点可以看到哪些cookie，比如：
+
+```http
+Set-Cookie: user="mary17" domain="xxx.com"
+```
+
+那么当用户访问*.xxx.com时，这条Cookie都会被转发出去。

@@ -162,7 +162,7 @@ static关键字表明一个成员变量或者是成员方法可以在不需要�
 
 ####  什么是类型中的限定通配符和非限定通配符？
 
-限定通配符有两种<？ extends T> 通过确保类型必须是T的子类来设定类型的上界，另一种是<? Super T> 通过确保类型必须是T的父类来设定类型的下届。泛型类型必须用限定的类型来进行初始化，否则会编译错误。 
+限定通配符有两种<？ extends T> 通过确保类型必须是T的子类来设定类型的上界，另一种是<? Super T> 通过确保类型必须是T的父类来设定类型的下界。泛型类型必须用限定的类型来进行初始化，否则会编译错误。 
 
 <?>表示非限定通配符，它可以用任意类型来替代。
 
@@ -275,7 +275,7 @@ ConcurrentHashMap为了提高本身的并发能力，在内部采用了一个叫
 
 ###  Collection和Collections的区别
 
-Collection是集合类的上层接口，继承于	它的接口主要有Set和List。它拥有基础的方法（add、addAll、remove、removeAll、iterator、size等等）
+Collection是集合类的上层接口，它的接口主要有Set和List。它拥有基础的方法（add、addAll、remove、removeAll、iterator、size等等）
 
 Collections是针对集合类的一个帮助类，它提供如下三类方法：
 
@@ -653,193 +653,6 @@ Java语言编译后会生成一个.class文件，反射就是通过字节码文�
 
 作用：反射机制指的是程序在运行时能够获取自身的信息。在Java中，只要给定类的名字，那么就可以通过反射机制来获取类的所有信息。
 
-### 负载均衡算法
-
-- 随机
-
-  ```java
-  public class Server {
-      public List<String> list = new ArrayList<String>() {
-          {
-              add("192.168.0.1");
-              add("192.168.0.2");
-              add("192.168.0.3");
-              add("192.168.0.4");
-          }
-      };
-  }
-  ```
-
-  ```java
-  public class FullRandom {
-      static Server server = new Server();
-      static Random random = new Random();
-      static int[] array = new int[4];
-  
-      public static int[] go() {
-          int number = random.nextInt(server.list.size());
-          array[number]++;
-          return array;
-      }
-      public static void main(String[] args) {
-          for (int i = 0; i < 1000; i++) {
-              go();
-          }
-          for (int i = 0; i < array.length; i++) {
-              System.out.println("192.168.0." +(i+1) + ":" + array[i]);
-          }
-      }
-  }
-  ```
-
-- 加权随机
-
-  ```java
-  public class Server {
-      public HashMap<String,Integer> map = new HashMap<String,Integer>(){
-          {
-              put("192.168.0.1",2);
-              put("192.168.0.2",9);
-              put("192.168.0.3",3);
-              put("192.168.0.4",15);
-          }
-      };
-  }
-  ```
-
-  ```java
-  public class RandomWeight {
-      static Server server = new Server();
-      static Random random = new Random();
-  
-      public static String go() {
-          int weight_sum = server.map.values().stream().mapToInt(a -> a).sum();
-          int number = random.nextInt(weight_sum);
-          for (Map.Entry<String,Integer> item : server.map.entrySet()) {
-              if (item.getValue() > number) {
-                  return item.getKey();
-              }
-              number -= item.getValue();
-          }
-          return "";
-      }
-  
-      public static void main(String[] args) {
-          for (int i = 0; i < 10; i++) {
-              System.out.println(go());
-          }
-      }
-  }
-  
-  ```
-
-  
-
-- 轮询：完全轮询、加权轮询、平滑加权轮询。
-
-- 完全轮询
-
-  ```java
-  //Server参考 随机算法。
-  public class FullRound {
-      static Server server = new Server();
-      static int index;
-  
-      /**
-       * 1->2->3->4->1->2....
-       * @return
-       */
-      public static String go() {
-          if (index == server.list.size()) {
-              index = 0;
-          }
-          return server.list.get(index++);
-      }
-  
-      public static void main(String[] args) {
-          for (int i = 0; i < 10; i++) {
-              System.out.println(go());
-          }
-      }
-  }
-  
-  ```
-
-- 加权轮询
-
-  ```java
-  //Server参考 加权随机算法。
-  public class RoundWeight {
-      static Server server = new Server();
-      static int index;
-  
-      public static String go() {
-          int sum_weight = server.map.values().stream().mapToInt((a -> a)).sum();
-          int number = (index++) % sum_weight;
-          for (Map.Entry<String,Integer> item : server.map.entrySet()) {
-              if (item.getValue() > number) {
-                  return item.getKey();
-              }
-              number -= item.getValue();
-          }
-          return "";
-      }
-  
-      public static void main(String[] args) {
-          int[] array = {0,0,0,0};
-          for (int i = 0; i < 10000; i++) {
-              switch (go()) {
-                  case "192.168.0.1" : array[0]++; break;
-                  case "192.168.0.2" : array[1]++; break;
-                  case "192.168.0.3" : array[2]++; break;
-                  case "192.168.0.4" : array[3]++; break;
-              }
-          }
-          for (int i = 0; i < array.length; i++) {
-              System.out.println("192.168.0." + (i+1) + "\t" + array[i]);
-          }
-      }
-  }
-  //观察大概率会导致一个或多个服务器的压力突然上升，有一个或者几个压力极小。
-  ```
-
-- 原地址散列
-
-  ```java
-  public class Hash {
-      public static String go(String client) {
-          int count = 20;
-          TreeMap<Integer,String> treeMap = new TreeMap<Integer,String>();
-          for (String s : new Server().list) {
-              for (int i = 0; i < count; i++) {
-                  treeMap.put((s + "--服务器--" + i).hashCode() , s);
-              }
-          }
-          int clientHash = client.hashCode();
-          SortedMap<Integer,String> sortedMap = treeMap.tailMap(clientHash);
-          Integer firstHash;
-          if (sortedMap.size() > 0) {
-              firstHash = sortedMap.firstKey();
-          }else {
-              firstHash = treeMap.firstKey();
-          }
-          String s = treeMap.get(firstHash);
-          return s;
-      }
-  
-      public static void main(String[] args) {
-          System.out.println(go("为啥要吃蝙蝠？"));
-          System.out.println(go("为什么"));
-          System.out.println(go("0"));
-          System.out.println(go("-110000"));
-          System.out.println(go("风雨交加"));
-      }
-  }
-  
-  ```
-
-  
-
 ##  JVM
 
 下面将主要针对HotSpot VM，HotSpot是JVM规范的一种实现，是目前使用范围最广的Java虚拟机。
@@ -1074,33 +887,13 @@ Mix GC不仅进行正常的新生代垃圾收集，同时也回收部分后台�
 2. 持久代溢出
    通常由于持久代设置过小，动态加载了大量Java类而导致溢出。
 
-###  GC参数
-
--Xms128M : 设置Java程序启动时堆内存128M（默认为物理内存1/64，小于1G）
-
--Xmx256M : 设置最大堆内存256M，超出后会出现OOMError（默认为物理内存1/64，小于1G）
-
--XX:Max Tenuring Threshold = 15; 对象进入老年代的年龄(Parallel是15，CMS是16)
-
--XX:+UseSerialGc 在年轻代和老年代使用串行回收器
-
--XX:ParallelGCThreads=4 设置用于垃圾回收的线程数为4（默认与CPU数量相同）
-
--XX:+UseConcMarkSweepGC 使用CMS收集器（老年代）
-
--XX:G1HeapRegionSize=16M 使用G1收集器时设置每个Region的大小
-
--XX:PrintGCDetails 打印GC信息
-
--XX:+PrintHeapAtGC 每次GC时，都会打印日志
-
 ###  优化JVM
 
 优化JVM一定要抓住两点。第一，怎样缩短单次GC的时间；第二，怎样缩短GC频率
 
 **将新对象预留在年轻代**
 
-   众所周知，由于FullGC的成本远远高于Minor GC，因此某些情况下需要尽可能将对象分配在年轻代，这在很多情况下是一个明智的选择。虽然在大部分情况下，JVM会尝试在Eden区分配对象，但是由于空间紧张等问题，很可能不得不将部分年轻对象提前向年老代压缩。因此，在JVM参数调优时可以为应用程序分配一个合理的年轻代空间，以最大限度避免新对象直接进入老年代的情况发生。 
+   众所周知，由于FullGC的成本远远高于MinorGC，因此某些情况下需要尽可能将对象分配在年轻代，这在很多情况下是一个明智的选择。虽然在大部分情况下，JVM会尝试在Eden区分配对象，但是由于空间紧张等问题，很可能不得不将部分年轻对象提前向年老代压缩。因此，在JVM参数调优时可以为应用程序分配一个合理的年轻代空间，以最大限度避免新对象直接进入老年代的情况发生。 
 
 **让大对象进入年老代**
 

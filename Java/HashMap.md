@@ -48,8 +48,11 @@ transient int size;
 transient int modCount;
 int threshold;
 final float loadFactor;
+static final int MIN_TREEIFY_CAPACITY = 64;
+
 /*
- HashMap 采用链表法避免哈希冲突，当链表长度大于TREEIFY_THRESHOLD(默认为8)时，将链表转换为红黑树，当小于UNTREEIFY_THRESHOLD(默认为6)时，又会转回链表以达到性能平衡，
+ HashMap 采用链表法避免哈希冲突，当链表长度大于TREEIFY_THRESHOLD(默认为8)并且当前数组长达大于MIN_TREEIFY_CAPACITY时，将链表转换为红黑树，否则就会进行table数组的扩容(resize)。
+ 当小于UNTREEIFY_THRESHOLD(默认为6)时，又会转回链表以达到性能平衡，
 */
 ```
 
@@ -202,7 +205,7 @@ final Node<K,V>[] resize() {
 
 ##  为什么是线程不安全的
 
-HashMao在并发时可能出现的问题主要是两方面：
+HashMap在并发时可能出现的问题主要是两方面：
 
 1. put的时候导致多线程数据不一致
    比如有两个线程A和B，首先A希望插入一个key-value对到HashMap中，首先计算记录所要落到的hash桶的索引坐标，然后获取到该桶里面的链表头节点，此时线程A的时间片用完了，而B被执行时会将A的值进行覆盖，而A再次运行时，还是用之前的数据，就会造成数据不一致的行为。
@@ -223,11 +226,11 @@ public class HashMap<K,V> extends AbstractMap<K,V>
 
     private static final long serialVersionUID = 362498820763181265L;
     static final int DEFAULT_INITIAL_CAPACITY = 1 << 4; 	// aka 16
-    static final int MAXIMUM_CAPACITY = 1 << 30;					//最大容量
-    static final float DEFAULT_LOAD_FACTOR = 0.75f;				//默认负载因子
-    static final int TREEIFY_THRESHOLD = 8; 	     				//树化阈值
-    static final int UNTREEIFY_THRESHOLD = 6;							//链化阈值
-    static final int MIN_TREEIFY_CAPACITY = 64;						//树化最小容量 & 达到树化阈值
+    static final int MAXIMUM_CAPACITY = 1 << 30;		   //最大容量
+    static final float DEFAULT_LOAD_FACTOR = 0.75f;	       //默认负载因子
+    static final int TREEIFY_THRESHOLD = 8; 	          //树化阈值
+    static final int UNTREEIFY_THRESHOLD = 6;			//链化阈值
+    static final int MIN_TREEIFY_CAPACITY = 64;			//树化最小容量 & 达到树化阈值
     static class Node<K,V> implements Map.Entry<K,V> {		//Node数组（底层实现）
         final int hash;
         final K key;

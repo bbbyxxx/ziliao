@@ -254,11 +254,7 @@ ArrayList是采用数组实现的，查找效率比LinkedList高，LinkedList采
 - 每个红色节点的两个子节点都是黑色
 - 从任一节点到其子树中的叶子节点的路径都包含相同数量的黑色节点
 
-###  ConcurrentHashMap工作原理、1.7和1.8的区别？
-
-####  工作原理
-
-ConcurrentHashMap为了提高本身的并发能力，在内部采用了一个叫做Segment的结构，一个Segment其实就是一个类HashTable的结构，Segment内部维护了一个链表数组，ConcurrentHashMap定位一个元素的过需要两次Hash操作，第一次Hash定位到Segment，第二次Hash定位到元素所在的链表的头部，因此，带来的副作用是Hash的过程比普通的HashMap要长，好处是写操作的时候可以只对元素所在的Segment进行操作即可，不会影响到其它的Segment，这样，在理想的情况下，ConcurrentHashMap可以最高同时支持Segment数量大小的写操作，所以可以大大提高ConcurrentHashMap的并发能力。
+###  ConcurrentHashMap1.7和1.8的区别？
 
 ####  区别
 
@@ -432,15 +428,19 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 ```java
 public ThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit, BolckingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectExecutionHandler handler);
 /*
-corePoolSize : 指定了线程池中的核心线程数量，没有添加任务时，线程数量为0，当达到核心线程数时，无论是否向池子里提不提交任务，线程池里至少会保持核心线程数量。 假设设定核心为2，添加4个任务，当任务执行完成后，线程池里存活的线程为2。
-maximumPoolSize : 指定了线程池中的最大线程数量，是在已经达到核心线程池参数并且任务队列已经满的情况下，才去判断该参数。     当任务提交时，如果线程数量达到了核心线程数，并且任务队列已满，不能再向任务队列中添加任务时，这时会检查任务是否达到了最大线程数，如果未达到，则创建新线程执行任务，否则执行拒绝策略。
+核心线程数: 指定了线程池中的核心线程数量，也称为可闲置的线程数量
+最大线程数: 线程最多能够创建的线程数量
+
+   当线程池接收到一个任务时，如果工作线程数没有达到核心线程数，那么就会新建一个线程，并绑定该任务，直到工作线程的数量达到核心线程数之前都不会重用之前的线程。 当工作线程数达到核心线程数了，这时会将任务放在任务队列去等待核心线程去执行。如果加入失败，则说明队列已经满了，当且仅当当前工作线程数小于最大线程数时，才会创建临时线程去执行，否则就会创建失败，拒绝该任务。
+   
+阻塞队列 : 任务队列，被提交但尚未被执行的任务，等待队列去执行
+threadFactory : 线程工厂，用于创建线程，一般用默认的
 keepAliveTime : 当线程池线程数量超过corePoolSize时，多余的空闲线程的存活时间
 unit : keepAliveTime的单位
-workQueue : 任务队列，被提交但尚未被执行的任务，等待队列去执行
-threadFactory : 线程工厂，用于创建线程，一般用默认的
 handler : 拒绝策略，当任务太多时来不及处理，如何拒绝任务
 */
 
+ExecutorService threadPool = Executors.newFixedThreadPool(5);
 
 public void execute (Runnable command) {
   if (command == null) {
@@ -475,6 +475,8 @@ public void execute (Runnable command) {
 2. IO密集型：主要进行长时间的IO操作，CPU利用率不是很高，一般设置为CUP两倍。
 
 ###  线程池是什么时候创建线程的？
+
+创建工作线程需要做一系列的判断，需要确保当前线程池可以创建新的线程之后，才能创建。首先，当线程池的状态是SHUTDOWN或者STOP时，则不能创建新的线程。再者就是需要去当前工作线程的数量与核心线程数、最大线程数进行比较，如果前者大于后者的话，也不允许创建。
 
 1. 在任务提交的时候创建线程
 2. 每一个任务先放到队列中
@@ -963,6 +965,8 @@ Mix GC不仅进行正常的新生代垃圾收集，同时也回收部分后台�
 除了系统提供的类加载器以外，开发人员通过继承java.lang.ClassLoader类的方式实现自己的类加载器，来满足一些特殊的需求。
 
 - 自定义类加载器：用户自定义的类加载器
+  1. 继承java.lang.ClassLoader
+  2. 重写父类的findClass()方法
 
 ####  自定义类加载器的常见场景
 

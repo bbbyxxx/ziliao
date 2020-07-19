@@ -99,65 +99,27 @@ Redis通过MULTI、EXEC、WATCH等命令来实现事务功能。事务提供了�
 
 在Redis中，事务总是具有原子性、一致性和隔离性，并且当Redis运行在某种特定的持久化模式下，事务也具有持久性。
 
-##  跳表实现
+##  跳表
 
-###  跳跃表节点定义和跳跃表描述符定义
+跳表（Skip List）是一种随机化的数据结构，基于并联的链表，实现简单，插入、删除、查找的复杂度均为O(logN)。简单说来跳表也是链表的一种，只不过它在链表的基础上增加了跳跃功能。
 
-```c
-typedef struct zskiplistNode {
-	sds ele;
-  double score;										//分值
-  struct zkiplistNode *bkackward; //后退指针
-	struct zskiplistLevel {
-    struct zskiplistNode *forward;	//前进指针
-		unsigned int span;  						//节点在该层和前向节点的距离
-  } level[];
-}zskiplistNode;
+![skiplist_insertions](./images/Redis/skiplist_insertions.png)
 
-typedef struct zskiplist {
-  struct zskiplistNode *header, * tail;		//头节点
-  unsigned long length;										//节点数量
-  int level;															//目前表内节点的最大层数
-}zskiplist;
-```
+从skiplist的创建和插入过程中可以看出，每一个节点的层数是随机出来的，而且新插入一个节点不会影响其它节点的层数。因此，插入操作只需要修改插入节点前后的指针，而不需要对很多节点都进行调整。
 
-###  node的创建
+###  实现
 
-```c
-zskiplistNode *zslCreateNode (int level, double score, sds ele) {
-  zskiplistNode *zn = zmalloc(sizeof(*zn) + level*sizeof(struct zskiplistLevel));
-  zn->score = score;
-  zn->ele = ele;
-  return zn;
-}
-```
+1. 当数据较少时，sorted set是由一个 ziplist来实现的。
+2. 当数据多的时候，sorted set是由dict + skiplist实现的，dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
+   ps : ziplist内的集合元素按score从小到大排序，score较小的排在表头位置。
+3. redis中的zset是由一个dict和一个skiplist来实现的，其中dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
 
+###  redis中的skiplist
 
-
-###  新建跳跃表
-
-```c
-zskiplist * zslCreate(void) {
-  int j;
-  zskiplist *zsl;
-  
-  zsl = zmalloc(sizeof(*zsl));
-  zsl->level = 1;
-  zsl->length = 0;
-  
-  
-  //创建一个层数为32，分值为0，成员对象为null的表头节点
-  zsl->header = zslCreateNode(ZSKIPLIST_MAXLEVEL, 0, NULL);
-  for (j = 0;j < ZSKIPLIST_MAXLEVEL; j++) {
-    zsl->header->level[j].forward = NULL;
-    zsl->header->level[j].span = 0;
-  }
-  
-  zsl->header->backward = NULL;
-  zsl->tail = NULL;
-  return zsl;
-}
-```
+1. score允许重复，即skiplist的key允许重复
+2. 在比较时，不仅比较分数，还比较数据本身，在redis的skiplist实现中，数据本身的内容为一标识这份数据，而不是由key来唯一标识
+3. 第一层链表不是一个单向链表，而是一个双向链表，这是为了方便以倒序方式获取一个范围内的元素
+4. 在skiplist中可以很方便地计算出每个元素的排名
 
 ##  缓存穿透
 

@@ -419,9 +419,77 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 ###  Java中有几种线程池
 
 1. newFixedThreadPool：创建一个指定工作线程数量的线程池，每当提交一个任务就创建一个工作线程，如果工作线程数量达到线程池初始的最大数，则将刚提交的任务存入到队列中。因为是指定工作线程数量，所以适合使用在任务量大但耗时少的任务。
+
+   ```java
+   public static ExecutorService newFixedThreadPool(int nThreads) {
+       return new ThreadPoolExecutor(nThreads, nThreads,
+                                     0L, TimeUnit.MILLISECONDS,
+                                     new LinkedBlockingQueue<Runnable>());
+   }
+   //任务队列为链表结构的无界队列
+   ```
+
 2. newCachedThreadPool：创建一个可根据实际情况调整线程数量的线程池。线程池的线程数量不稳定，但若有空闲线程可以复用，则会优先使用可复用的线程。若所有线程都在工作，又有新的任务提交，则会创建新的线程处理任务，所有线程在当前任务执行完毕后，将返回线程池进行复用。 因为会复用并且即时创建，所以适合使用在任务量大但耗时少的任务。
+
+   ```java
+   public static ExecutorService newCachedThreadPool() {
+       return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                     60L, TimeUnit.SECONDS,
+                                     new SynchronousQueue<Runnable>());
+   }
+   public static ExecutorService newCachedThreadPool(ThreadFactory threadFactory) {
+       return new ThreadPoolExecutor(0, Integer.MAX_VALUE,
+                                     60L, TimeUnit.SECONDS,
+                                     new SynchronousQueue<Runnable>(),
+                                     threadFactory);
+   }
+   //特点：无核心线程，非核心线程数量无限
+   ```
+
 3. newSingleThreadPool：创建只有一个线程的线程池。 适合在多个任务顺序执行的场景。
+
+   ```java
+   public static ExecutorService newSingleThreadExecutor() {
+       return new FinalizableDelegatedExecutorService
+           (new ThreadPoolExecutor(1, 1,
+                                   0L, TimeUnit.MILLISECONDS,
+                                   new LinkedBlockingQueue<Runnable>()));
+   }
+   public static ExecutorService newSingleThreadExecutor(ThreadFactory threadFactory) {
+       return new FinalizableDelegatedExecutorService
+           (new ThreadPoolExecutor(1, 1,
+                                   0L, TimeUnit.MILLISECONDS,
+                                   new LinkedBlockingQueue<Runnable>(),
+                                   threadFactory));
+   }
+   ```
+
+   
+
 4. newScheduleThreadPool：创建一个定长的线程池，而且支持定时的以及周期性的任务执行。  适合使用在执行定时任务和具体固定周期的重复任务。
+
+   ```java
+   private static final long DEFAULT_KEEPALIVE_MILLIS = 10L;
+    
+   public static ScheduledExecutorService newScheduledThreadPool(int corePoolSize) {
+       return new ScheduledThreadPoolExecutor(corePoolSize);
+   }
+   public ScheduledThreadPoolExecutor(int corePoolSize) {
+       super(corePoolSize, Integer.MAX_VALUE,
+             DEFAULT_KEEPALIVE_MILLIS, MILLISECONDS,
+             new DelayedWorkQueue());
+   }
+    
+   public static ScheduledExecutorService newScheduledThreadPool(
+           int corePoolSize, ThreadFactory threadFactory) {
+       return new ScheduledThreadPoolExecutor(corePoolSize, threadFactory);
+   }
+   public ScheduledThreadPoolExecutor(int corePoolSize,
+                                      ThreadFactory threadFactory) {
+       super(corePoolSize, Integer.MAX_VALUE,
+             DEFAULT_KEEPALIVE_MILLIS, MILLISECONDS,
+             new DelayedWorkQueue(), threadFactory);
+   ```
 
 ###  线程池参数
 

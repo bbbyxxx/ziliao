@@ -5,10 +5,23 @@
 重要的属性：
 
 ```java
-static final int MOVED     = -1; // 表示正在转移
+static final int MOVED     = -1; // 表示正在迁移
 static final int TREEBIN   = -2; // 表示已经转换成树
 static final int RESERVED  = -3; // hash for transient reservations
 static final int HASH_BITS = 0x7fffffff; // usable bits of normal node hash
+```
+
+sizeCtl:
+
+```java
+sizeCtl = 0;	//未指定初始容量
+sizeCtl > 0;	//由指定的初始容量计算而来，再找最近的2的幂次方，比如传入6，则初始化容量为16
+sizeCtl = -1;	//table正在初始化
+
+//初始化完成后:
+sizeCtl = table.length * 0.75
+
+
 ```
 
 
@@ -22,13 +35,11 @@ static final int spread(int h) {	    //无符号右移加入高位影响，与HA
 
 ```
 
-
-
-
+put源码分析：
 
 ```java
 /**
-* 当添加一对键值对的时候，首先会去判断保存这些键值对的数组是不是初始化了，
+* 当添加一对键值对的时候，首先会去判断保存这些键值对的数组是不是已经初始化了，
 * 如果没有的话就初始化数组
 *  然后通过计算hash值来确定放在数组的哪个位置
 * 如果这个位置为空则直接添加，如果不为空的话，则取出这个节点来
@@ -119,7 +130,7 @@ final V putVal(K key, V value, boolean onlyIfAbsent) {
 
 数组初始化
 
-table初始化是没有加锁的，当要初始化时会通过CAS操作将SIZECTL设为-1，而SIZECTL由volatile修饰，保证修改对后面线程可见。  之后如果再有线程执行到此方法时检测到SIZETL为负数，那么说明已经有线程在扩容了，这个线程就会调用Thread.yield让出CPU时间片。
+table初始化是没有加锁的，当要初始化时会通过CAS操作将sizeCtl设为-1，而sizeCtl由volatile修饰，保证修改对后面线程可见。  之后如果再有线程执行到此方法时检测到SIZETL为负数，那么说明已经有线程在扩容了，这个线程就会调用Thread.yield让出CPU时间片。
 
 ```java
 /**
@@ -134,7 +145,7 @@ private final Node<K,V>[] initTable() {
             if ((sc = sizeCtl) < 0)
                 Thread.yield(); //说明已经有线程在扩容了，这个线程就会调用Thread.yield让出一次CPU执行时间
             
-            //当正在初始化时将SIZECTL设为-1
+            //当正在初始化时将sizeCtl设为-1
             else if (U.compareAndSwapInt(this, SIZECTL, sc, -1)) {
                 try {
                     if ((tab = table) == null || tab.length == 0) {
@@ -158,7 +169,7 @@ private final Node<K,V>[] initTable() {
 
  ####   什么时候会扩容？
 
-1. 使用put添加元素时会调用addCount()，内部检查SIZECTL是否需要扩容
+1. 使用put添加元素时会调用addCount()，内部检查sizeCtl是否需要扩容
 2. tryPrisize()被调用，当链表转红黑树时table容量小于64， 或调用putAll一次性加入大量元素
 
 ```java

@@ -2,7 +2,7 @@
 
 ##  源码详细分析
 
-![HashMap数据结构](images/Java/HashMap数据结构.png)
+![HashMap数据结构](../images/Java/HashMap数据结构.png)
 
 ###  构造函数
 
@@ -56,7 +56,7 @@ static final int MIN_TREEIFY_CAPACITY = 64;
 */
 ```
 
-![HashMap数据结构](images/Java/HashMap数据结构.png)
+![HashMap数据结构](../images/Java/HashMap数据结构.png)
 
 ###  key的hash
 
@@ -193,9 +193,9 @@ final Node<K,V>[] resize() {
 
 先通过hash算法得到hash值，hash & (n-1)得到存储位置，判断Node数组table是否为null或者长度是否为0，如果是则进行resize对table进行初始化，否则判断table[i]是否有元素，如果没有则直接进行插入，否则判断传入的key是否存在，如果存在用新值覆盖旧值，不存在则判断是否为TreeNode，是则进行红黑树插入，否则进行链表插入，插入后判断是否需要扩容，如果需要则进行扩容，否则结束。
 
-![HashMap-putVal](images/Java/HashMap-putVal.png)
+![HashMap-putVal](../images/Java/HashMap-putVal.png)
 
-![HashMap-红黑树插入](images/Java/HashMap-红黑树插入.png)
+![HashMap-红黑树插入](../images/Java/HashMap-红黑树插入.png)
 
 ###  hash冲突发生的几种情况
 

@@ -271,3 +271,76 @@ public class ConsistentHash<T> {
 
 ##  字典
 
+###  数据结构
+
+Redis的字典是通过哈希表实现的，一个哈希表有多个节点，每个节点代表一个键值对。
+
+```c
+typedef struct dictht {
+  dictEntry **table;			// 哈希表数组
+  unsigned long size;			// 哈希表大小
+  unsigned long sizemask; // 大小掩码，总是等于size-1
+  unsigned long used; 		// 已使用键值对数
+}dictht;
+```
+
+```c
+typedef struct dictEntry{
+  void *key;
+  union {
+    void *key;
+    uint64_t u64;		//uint64_t整数
+    int64_t s64;		//int64_t整数
+  }v;
+  struct dictEntry * next; //采用拉链法解决hash冲突
+}
+```
+
+完整的字典是由两个哈希表dictht构成的:
+
+```c
+typedef struct dict {
+  dictType *type;    //类型特定函数
+  void *privdata;    //私有数据
+  dictht ht[2];  
+  int rehashidx;     //rehash进度，当哈希表进行rehash的时候用到，其他情况下为-1
+}dict;
+```
+
+###  插入过程
+
+1. 计算key的哈希值，通过MurMurHash2算法
+
+   ```c
+   hash = dict->type->hashFunction(key)
+   ```
+
+2. 借助sizemask和哈希值，来计算出索引值
+
+   ```c
+   index = hash & dict->ht[0].sizemask 
+   ```
+
+3. 如果当前下标没有存放任何键值对，则直接存放，否则借助拉链法插入新的键值对
+
+###  rehash
+
+#### 什么时候会rehash
+
+```c
+load_factor = ht[0].used / ht[0].size
+```
+
+1. 当服务器目前没有执行的BGSAVE命令或者BGREWRUTEAOF命令，并且load_factor大于等于1
+2. 当服务器目前正在执行BGSAVE命令或者BGREWRUTEAOF命令，并且load_factor大于等于5
+
+ps: BGSAVE是redis进行RDB持久化用到的命令，BGREWRUTEAOF是redis进行AOF持久化的命令。也就是说当redis进行持久化的时候，可能会触发rehash。
+
+####  rehash过程
+
+1. rehash时需要开辟新哈希表，将旧哈希表的数据迁过来
+2. 为dict的哈希表ht[1]分配空间，分配的空间大小取决于操作类型和当前键值对数量ht[0].used
+   - 如果是扩展操作，ht[1]的大小为第一个大于等于**ht[0].used * 2 * 2^n**的整数
+   - 如果是收缩操作，ht[1]的大小为第一个大于等于**ht[0].used * 2^n**的整数
+3. 重新计算ht[0]中所有键的哈希值和索引值，将相应的键值对迁移到ht[1]的指定位置去（这个过程是渐进式的，否则redis服务器会不可用）
+4. 当ht[0]的所有键值对都迁移到ht[1]中后，将ht[1]设为ht[0]，并新建一个空表，为下次做准备

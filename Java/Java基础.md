@@ -683,7 +683,7 @@ Mark word记录了对象和锁有关的信息，当某个对象被synchronized�
 
 ####  内存模型相关概念
 
-Java线程之间的通信由Java内存模型（JavaMemoryModel）控制，JMM决定一个线程对共享变量的修改何时对另外一个线程可见。JMM定义了线程与主内存的抽象关系：线程之间的变量存储在主内存（Main Memory）中，每个线程都有一个私有的本地内存（Local Memory）保存着共享变量的副本。
+Java线程之间的通信由Java内存模型（JavaMemoryModel）控制（JMM：不存在的东西，是一种约定），JMM决定一个线程对共享变量的修改何时对另外一个线程可见。JMM定义了线程与主内存的抽象关系：线程之间的变量存储在主内存（Main Memory）中，每个线程都有一个私有的本地内存（Local Memory）保存着共享变量的副本。
 
 ![volatile](../images/Java/volatile.png)
 

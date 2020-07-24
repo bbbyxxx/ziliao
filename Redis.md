@@ -99,28 +99,6 @@ Redis通过MULTI、EXEC、WATCH等命令来实现事务功能。事务提供了�
 
 在Redis中，事务总是具有原子性、一致性和隔离性，并且当Redis运行在某种特定的持久化模式下，事务也具有持久性。
 
-##  跳表
-
-跳表（Skip List）是一种随机化的数据结构，基于并联的链表，实现简单，插入、删除、查找的复杂度均为O(logN)。简单说来跳表也是链表的一种，只不过它在链表的基础上增加了跳跃功能。
-
-![skiplist_insertions](./images/Redis/skiplist_insertions.png)
-
-从skiplist的创建和插入过程中可以看出，每一个节点的层数是随机出来的，而且新插入一个节点不会影响其它节点的层数。因此，插入操作只需要修改插入节点前后的指针，而不需要对很多节点都进行调整。
-
-###  实现
-
-1. 当数据较少时，sorted set是由一个 ziplist来实现的。
-2. 当数据多的时候，sorted set是由dict + skiplist实现的，dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
-   ps : ziplist内的集合元素按score从小到大排序，score较小的排在表头位置。
-3. redis中的zset是由一个dict和一个skiplist来实现的，其中dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
-
-###  redis中的skiplist
-
-1. score允许重复，即skiplist的key允许重复
-2. 在比较时，不仅比较分数，还比较数据本身，在redis的skiplist实现中，数据本身的内容为一标识这份数据，而不是由key来唯一标识
-3. 第一层链表不是一个单向链表，而是一个双向链表，这是为了方便以倒序方式获取一个范围内的元素
-4. 在skiplist中可以很方便地计算出每个元素的排名
-
 ##  缓存穿透
 
 缓存穿透是指缓存和数据库中都没有的数据，而用户不断发起请求，如发起id为-1的数据或id为特别大不存在的数据。这时的用户很可能是攻击者，攻击者会导致数据库压力过大。
@@ -346,3 +324,25 @@ ps: BGSAVE是redis进行RDB持久化用到的命令，BGREWRUTEAOF是redis进行
    - rehash时会有rehashidx来进行计数，每迁移一次进行+1，当 rehashidx == ht[0].size 时则表示迁移完成，置为-1
    - 在rehash的过程中，可能会存在同时查两个哈希表的情况，当插入新数据的时候，就直接在ht[1]上进行操作
 4. 当ht[0]的所有键值对都迁移到ht[1]中后，将ht[1]设为ht[0]，并新建一个空表，为下次做准备
+
+##  跳表
+
+跳表（Skip List）是一种随机化的数据结构，基于并联的链表，实现简单，插入、删除、查找的复杂度均为O(logN)。简单说来跳表也是链表的一种，只不过它在链表的基础上增加了跳跃功能。
+
+![skiplist_insertions](./images/Redis/skiplist_insertions.png)
+
+从skiplist的创建和插入过程中可以看出，每一个节点的层数是随机出来的，而且新插入一个节点不会影响其它节点的层数。因此，插入操作只需要修改插入节点前后的指针，而不需要对很多节点都进行调整。
+
+###  实现
+
+1. 当数据较少时，sorted set是由一个 ziplist来实现的。
+2. 当数据多的时候，sorted set是由dict + skiplist实现的，dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
+   ps : ziplist内的集合元素按score从小到大排序，score较小的排在表头位置。
+3. redis中的zset是由一个dict和一个skiplist来实现的，其中dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
+
+###  redis中的skiplist
+
+1. score允许重复，即skiplist的key允许重复
+2. 在比较时，不仅比较分数，还比较数据本身，在redis的skiplist实现中，数据本身的内容为一标识这份数据，而不是由key来唯一标识
+3. 第一层链表不是一个单向链表，而是一个双向链表，这是为了方便以倒序方式获取一个范围内的元素
+4. 在skiplist中可以很方便地计算出每个元素的排名

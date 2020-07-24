@@ -346,3 +346,139 @@ ps: BGSAVE是redis进行RDB持久化用到的命令，BGREWRUTEAOF是redis进行
 2. 在比较时，不仅比较分数，还比较数据本身，在redis的skiplist实现中，数据本身的内容为一标识这份数据，而不是由key来唯一标识
 3. 第一层链表不是一个单向链表，而是一个双向链表，这是为了方便以倒序方式获取一个范围内的元素
 4. 在skiplist中可以很方便地计算出每个元素的排名
+
+```java
+package com.xust.skip;
+
+import java.util.Random;
+
+public class SkipList{
+
+    private static final int MAX_LEVEL = 16;       //节点的个数
+    private int levelCount = 1;                    //索引层级数
+    private SkipNode head = new SkipNode();
+    private Random random = new Random();
+
+
+    public SkipNode find(int value) {
+        SkipNode p = head;
+        for (int i = levelCount - 1; i >= 0; i--) {
+            while (p.next[i] != null && p.next[i].data < value) {
+                p = p.next[i];
+            }
+        }
+
+        if (p.next[0] != null && p.next[0].data == value) {
+            return p.next[0];
+        }
+
+        return null;
+    }
+
+    public void insert(int value) {
+        int level = randomLevel();      //生成随机层数
+        SkipNode node = new SkipNode();
+        node.data = value;
+        node.maxLevel = level;          //代表当前节点应该在的位置
+
+        SkipNode update[] = new SkipNode[level];
+
+        for (int i = 0; i < level; i++) {
+            update[i] = head;
+        }
+
+        SkipNode p = head;
+        // 找到待插入位置
+        for (int i = level - 1; i >= 0; i--) {
+            while (p.next[i] != null && p.next[i].data < value) {
+                p = p.next[i];
+            }
+            update[i] = p;
+        }
+        // 更新
+        for (int i = 0; i < level; i++) {
+            node.next[i] = update[i].next[i];
+            update[i].next[i] = node;
+        }
+
+        if (levelCount < level) {
+            levelCount = level ;
+        }
+    }
+
+    public void delete(int value) {
+        SkipNode[] update = new SkipNode[levelCount];
+        SkipNode p = head;
+
+        // 找到待删除节点
+        for (int i = levelCount - 1; i >= 0; i--) {
+            while (p.next[i] != null && p.next[i].data < value) {
+                p = p.next[i];
+            }
+            update[i] = p;
+        }
+
+        // 删除并更新
+        if (p.next[0] != null && p.next[0].data == value) {
+            for (int i = levelCount - 1; i >= 0; i--) {
+                if (update[i].next[i] != null && update[i].next[i].data == value) {
+                    update[i].next[i] = update[i].next[i].next[i];
+                }
+            }
+        }
+    }
+
+
+    /**
+     * 随机函数，生成待保存节点的层数
+     * @return
+     */
+    public int randomLevel() {
+        int level = 1;
+        for (int i = 1; i <= MAX_LEVEL ; i++) {
+            if (random.nextInt() % 2 == 1) {
+                level++;
+            }
+        }
+        return level;
+    }
+
+
+    public static class SkipNode {
+        private int data = -1;
+        private SkipNode next[] = new SkipNode[MAX_LEVEL];
+        private int maxLevel = 0;
+
+        @Override
+        public String toString() {
+            StringBuilder builder = new StringBuilder();
+            builder.append("{data:");
+            builder.append(data);
+            builder.append("; leves: ");
+            builder.append(maxLevel);
+            builder.append(" }");
+            return builder.toString();
+        }
+    }
+
+    /**
+    * 按层展示数据
+    */
+    public void display() {
+        for (int i = 1; i < levelCount; i++) {
+            SkipNode p = head;
+            while (p.next[0] != null) {
+                if (p.next[0].maxLevel == i)
+                {
+                    System.out.print(p.next[0] + " ");
+                }
+                p = p.next[0];
+            }
+            System.out.println();
+        }
+    }
+
+}
+
+```
+

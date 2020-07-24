@@ -333,13 +333,6 @@ ps: BGSAVE是redis进行RDB持久化用到的命令，BGREWRUTEAOF是redis进行
 
 从skiplist的创建和插入过程中可以看出，每一个节点的层数是随机出来的，而且新插入一个节点不会影响其它节点的层数。因此，插入操作只需要修改插入节点前后的指针，而不需要对很多节点都进行调整。
 
-###  实现
-
-1. 当数据较少时，sorted set是由一个 ziplist来实现的。
-2. 当数据多的时候，sorted set是由dict + skiplist实现的，dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
-   ps : ziplist内的集合元素按score从小到大排序，score较小的排在表头位置。
-3. redis中的zset是由一个dict和一个skiplist来实现的，其中dict用于查询数据到分数的对应关系，而skiplist用来根据分数查询数据。
-
 ###  redis中的skiplist
 
 1. score允许重复，即skiplist的key允许重复
@@ -481,4 +474,70 @@ public class SkipList{
 }
 
 ```
+
+##  zset
+
+有序集合对象的编码可以是ziplist或者skiplist，同时满足以下条件时使用ziplist编码：
+
+- 元素数量小于128个
+
+- 所有member的长度都小于64字节
+
+  ```
+  ps: 如果不满足，可以通过Redis配置文件zset-max-ziplist-entries 选项和 zset-max-ziplist-value 进行修改
+  ```
+
+###  ziplist
+
+ziplist编码的Zset使用紧挨在一起的压缩列表节点来保存，第一个保存member，第二个保存score。ziplist内的集合元素按score从小到大排序，其实质是一个双向链表。
+
+ziplist的结构如下：
+![20200724202855](./images/Redis/20200724202855.png)
+
+- zlbytes：存储一个无符号整数，固定四个字节长度，用于存储压缩列表所占用的字节，当重新分配内存的时候使用，不需要遍历整个列表来计算内存大小
+- zltail：存储一个无符号整数，固定四个字节长度，表示ziplist中最后一项在ziplist中的偏移字节数，使得我们可以很方便地找到最后一项，从而可以在ziplist尾端快速地执行push或pop操作
+- zlen：压缩列表包含的节点个数，固定两个字节长度（16bit），表示ziplist中数据项entry的个数
+- entry：表示真正存放数据的数据项，长度不定。一个数据项（entry）也有它自己的内部结构
+- zlend：ziplist最后一个字节，值固定等于255，一个结束标记
+
+###  skiplist
+
+skiplist编码的zset底层为一个被称为zset的结构体，包含一个字典和一个跳跃表，跳跃表按score从小到大保存所有集合元素，字典则保存着从member到score的映射，这样就可以用O(1)的时间复杂度来查找member对应的score值，虽然同时使用两种结构，但他们会通过指针来共享相同元素的member和score，因此不会浪费额外的内存。
+
+```c
+#define ZSKIPLIST_MAXLEVEL 32
+#define ZSKIPLIST_P 0.25
+ 
+typedef struct zskiplistNode {
+robj *obj;
+double score;
+struct zskiplistNode *backward;
+struct zskiplistLevel {
+struct zskiplistNode *forward;
+unsigned int span;
+} level[];
+} zskiplistNode;
+ 
+typedef struct zskiplist {
+struct zskiplistNode *header, *tail;
+unsigned long length;
+int level;
+} zskiplist;
+```
+
+1. 当数据较少时，sorted set是由ziplist实现的
+2. 当数据多的时候，sorted set是由dict + skiplist实现的，dict用来查询数据到分数的对应关系，skip用来根据分数查询数据
+
+###  redis中的skiplist与经典不同之处
+
+1. 分数score允许重复，即skiplist的key允许重复
+2. 在比较时，不仅比较分数，还比较数据本身，在Redis的skiplist实现中，数据本身的内容唯一标识这份数据，而不是由key来唯一标识。另外，当多个元素分数相同的时候，还需要根据数据内容来进行字典排序
+3. 第1层链表不是一个单向链表，而是一个双向链表，方便以倒序获取元素
+4. 在skiplist中可以很方便计算出每个元素的排名
+
+###  redis为什么使用skiplist而不用平衡树？
+
+1. 不是非常消耗内存，实际上取决于生成层数函数里的函数p
+2. 有序集合经常会进行zrange或zrevrang这种范围查找操作，双向链表可以十分方便地进行这类操作
+3. 实现简单，zrank操作还有可能达到O(logn)的时间复杂度
 

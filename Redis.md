@@ -187,11 +187,16 @@ AOF可以做到全程持久化，只需要在配置中开启appendonly yes。每
 
 缺点：AOF的文件体积会大于RDB的体积，根据所使用的策略，AOF的速度可能会慢于RDB。
 
->appendfsync  always       每次有修改都会写入AOF文件
+>appendfsync  always       每次有修改都会写入AOF文件，效率最低，最安全；每个事件循环都要将aof_buf缓冲区中的所有内容写到AOF文件，并且同步AOF文件。
 >
->appendfsync. everysec    每秒钟同步一次
+>appendfsync. everysec    每秒钟同步一次，每隔一秒进行一次同步，假如出现故障停机，数据库也只丢失一秒钟的命令数据
 >
->appendfsync  no              让操作系统决定何时进行同步
+>appendfsync  no              让操作系统决定何时进行同步，写入速度最快，同步时间最长。
+
+####  AOF重写
+
+为了解决体积膨胀的问题，Redis提供了AOF文件重写的功能，Redis可以新建一个AOF文件来替代现有的AOF文件，新旧两个所保存的数据库状态相同，但新AOF不会包含任何浪费空间的冗余命令，所以新AOF文件的体积会小得多。
+
 
 ##  Redis事务
 

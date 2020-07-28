@@ -254,12 +254,6 @@ ArrayList是采用数组实现的，查找效率比LinkedList高，LinkedList采
 - 每个红色节点的两个子节点都是黑色
 - 从任一节点到其子树中的叶子节点的路径都包含相同数量的黑色节点
 
-###  ConcurrentHashMap1.7和1.8的区别？
-
-####  区别
-
-1.7之前采用的是锁机制，在对某个Segment进行操作时，将该Segment锁定，不允许对其进行非查询操作，而在1.8之后采用Node + CAS + Synchronized无锁算法， 进行了良好的优化。
-
 ###  Collection和Collections的区别
 
 Collection是集合类的上层接口，它的接口主要有Set和List。它拥有基础的方法（add、addAll、remove、removeAll、iterator、size等等）

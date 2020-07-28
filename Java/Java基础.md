@@ -206,7 +206,7 @@ Java通过面向对象的方法进行异常处理，把各种不同的异常进�
 
 - Factory：ThreadPool，线程池中由线程工厂创建线程，一般用默认的
 
-- Adapter：Arrays.asList，将数组转换为list，将一个类的接口转换为客户希望的另一个接口，使得原本接口不兼容而不能一起工作的那些类可以一起工作
+- Adapter：Arrays.asList || list.toArray，将数组转换为list，将一个类的接口转换为客户希望的另一个接口，使得原本接口不兼容而不能一起工作的那些类可以一起工作
 
 - Iterator迭代器模式：java.util.Iterator，提供一个一致的方法来顺序访问集合中的对象，这个方法与底层的集合的具体实现无关
 

@@ -199,7 +199,7 @@ Java通过面向对象的方法进行异常处理，把各种不同的异常进�
   /**
   Every Java application has a single instance of Class Runntime that allows the application to interface with the environment in which the application is running.
   */
-  private static Runntime currentRuntime = new Runtime(); //懒汉式
+  private static Runntime currentRuntime = new Runtime(); //恶汉式
   ```
 
 - Builder：StringBuilder，StringBuilder可以扩展原对象，不同的字符串也可以按照不同的顺序拼接

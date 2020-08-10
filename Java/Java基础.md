@@ -806,8 +806,6 @@ ReferenceQueue<String> queue = new ReferenceQueue<String>();
 PhantomReference<String> pr = new PhantomReference<String>(new String("hello"), queue);
 ```
 
-
-
 ###  JVM回收算法
 
 ####  标记-清除算法
@@ -841,9 +839,17 @@ PhantomReference<String> pr = new PhantomReference<String>(new String("hello"), 
 ###  GC垃圾回收机制
 
 1. 堆区有两个Survivor区，新建的对象会存活在Eden中，Eden区如果没有足够的空间时会引发一次young区的GC。
+
 2. 在经历一次Minor GC后，Eden中的存活对象就会被移动到第一块survivor（to）区，此时Eden被清空。
+
 3. 等Eden再次填满，就再触发一次Minor GC，Eden和S0中的存活对象又会被复制送入第二块survivor区，此时to和Eden被清空，然后下一轮to和from互换角色。
-4. 如果survovor的空间不足或经历16次Minor GC还能在新生代中存活的对象会通过分配担保机制被送入老年代。
+
+4. 如果survovor的空间不足或经历15次Minor GC还能在新生代中存活的对象会通过分配担保机制被送入老年代。
+
+   ```
+   当survivor空间中相同年龄所有对象大小总和大于survivor空间的一半，年龄大于或等于该年龄的对象就可以直接进入老年代。
+   ```
+
 5. 老年代负责分配担保让survivor无法容纳的对象直接进入老年代，如果剩余空间大小小于转移对象大小，将直接进行Full GC。
 
 ###  什么时候进行Minor GC和Full GC

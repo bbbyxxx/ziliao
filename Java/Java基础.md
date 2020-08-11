@@ -204,7 +204,7 @@ Java通过面向对象的方法进行异常处理，把各种不同的异常进�
   /**
   Every Java application has a single instance of Class Runntime that allows the application to interface with the environment in which the application is running.
   */
-  private static Runntime currentRuntime = new Runtime(); //恶汉式
+  private static Runntime currentRuntime = new Runtime(); //饿汉式
   ```
 
 - Builder：StringBuilder，StringBuilder可以扩展原对象，不同的字符串也可以按照不同的顺序拼接
@@ -219,7 +219,7 @@ Java通过面向对象的方法进行异常处理，把各种不同的异常进�
 
 ###  什么是fail- -fast
 
-fail-fast机制时Java集合中的一种错误机制。当多个线程对同一个集合的内容进行操作时，就可能会产生fail-fast事件。
+fail-fast机制是Java集合中的一种错误机制。当多个线程对同一个集合的内容进行操作时，就可能会产生fail-fast事件。
 
 ```java
 final void checkForComodification() {

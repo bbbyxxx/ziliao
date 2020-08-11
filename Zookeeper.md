@@ -54,6 +54,14 @@ BASE是对CAP中一致性和可用性权衡的结果，其来源于对大规模�
 
 强调的是系统中所有的数据副本，在经过一段时间的同步后，最终能够达到一个一致的状态，而需要实时保证系统数据的强一致性。
 
+##  ZooKeeper同步流程
+
+1. Leader等待server连接
+2. Follower连接Leader，将最大的zxid发送给Leader
+3. Leader根据Follow的zxid确定同步点
+4. 完成同步后通知Follower已经成为uptodate状态
+5. Follower收到uptodate消息后，又可以重新接受client的请求进行服务了
+
 ##  ZooKeeper保证了如下分布式一致性特性
 
 1. 顺序一致性：从同一个客户端发起的事务请求，最终将会严格地按照其发起顺序被应用到ZooKeeper中去。
@@ -233,3 +241,14 @@ ZooKeeper集群的机制是只要超过半数的节点正常，集群就能正�
 2. 队列按照FIFO方式进行入队和出队操作。
    和分布式锁服务中的控制时序场景基本原理一致，入列有编号，出列按编号。在特定的目录下创建PERSISTENT_SEQUENTIAL节点，创建成功时watcher通知等待的队列，队列删除序列号最小的节点用以消费。此场景下ZooKeeper的Znode用于消息存储，Znode存储的数据就是消息队列中的消息内容，SEQUENTIAL序列号就是消息的编号，按序取出即可。
 
+##  ZooKeeper watch机制
+
+Watch机制官方声明：一个Watch事件是一个一次性的触发器，当被设置了Watch的数据发生了改变的时候，服务器则将这个改变发送给设置了Watch的客户端，以便通知它们。
+
+###  特点
+
+1. 一次性触发数据改变时，一个watch event会被发送到client，但是client只会收到一次这样的信息
+2. watch event异步发送watcher的通知事件从server到client是异步的，会存在由于网络延迟或其他因素导致客户端在不通的时刻监听到事件，即我们使用ZooKeeper不能期望能够每次监控到节点的变化
+3. 数据监视ZooKeeper有数据监视（getdata()）和子数据监视(getchildren())
+4. 当一个客户端连接到一个新的服务器上时，watch将会被以任意会话事件触发。当与一个服务器失去连接时，是无法接收到watch的，而当client重新连接时，如果需要的话，所有先前注册过的watch，都会被重新注册
+5. watch是轻量级的，其实就是本地JVM的CallBack，服务端只是存了是否有设置了watcher的布尔类型

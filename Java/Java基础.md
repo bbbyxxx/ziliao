@@ -426,6 +426,12 @@ static class Entry<K,V> extends HashMap.Node<K,V> {
 
 不安全。i++不是原子性操作，i++分为取值、加1、再赋值，执行期中任何一步都是有可能被其他线程抢占的。
 
+### execute()和submit()的区别
+
+1. 当任务出错时，submit不会有报错信息，在使用submit的时候，错误的堆栈信息跑出来的时候会被内部捕获到
+2. execute方法用于提交不需要返回值的任务，所以无法判断任务是否被线程池执行成功
+3. submit方法用于提交需要返回值的任务，线程池会返回一个future类型的对象，通过这个future对象可以判断任务是否执行成功，并且可以通过future的get()方法来获取返回值，get()方法会阻塞当前线程直到任务完成，而使用get方法则会阻塞当前线程一段时间后立即返回，这时候有可能任务没执行完
+
 ###  Java中有几种线程池
 
 1. newFixedThreadPool：创建一个指定工作线程数量的线程池，每当提交一个任务就创建一个工作线程，如果工作线程数量达到线程池初始的最大数，则将刚提交的任务存入到队列中。因为是指定工作线程数量，所以适合使用在任务量大但耗时少的任务。
@@ -565,6 +571,37 @@ public void execute (Runnable command) {
 - 降低资源消耗。通过重复利用已创建的线程降低线程创建和销毁造成的消耗。
 - 提高响应速度。当任务到达时，任务可以不需要等到线程创建就能执行。
 - 提高线程的可管理性。线程是稀缺资源，如果无限制的创建，不仅会消耗系统资源，还会降低系统的稳定性，使用线程池可以统一分配、调优和监控。
+
+###  线程池是如何复用线程的？
+
+**Thread.start()只能调用一次，一旦这个调用结束，则该线程就到了stop状态，不能再次调用。**
+
+1. ThreadPoolExecutor.execute()的功能是：
+
+   - 将任务添加至阻塞队列workQueue --> workQueue.offer(command)
+   - 根据core和maxPool，选择是否创建Worker --> addWork()
+
+2. addWorker：
+
+   - 先进行参数校验（任务队列是否为空、线程池是否可用、是否超过线程数量）
+   - 创建worker，获取全局锁，根据worker获取线程并启动线程（如果添加worker）成功，并设置workerStarted为true，最终如果worker的线程未启动，在执行addworkFailed(w)
+   - 在worker.run方法里，会调用runWorker，runworker则会通过getTask去获取任务 ，并通过task.run()执行具体的任务
+   - getTask()里获取workQueue里面获取任务
+
+3. 主要复用的逻辑在runWorker里，首先会执行worker本身的任务，然后当任务执行完成后，会继续去获取task并执行，直到队列为空
+
+   ```java
+   final void runWorker(Worker w) {
+     ...;
+     Runnable task = w.firstTask;
+     while (task != null || (task = getTask()) != null) {
+       ...;
+     }
+     ...;
+   }
+   ```
+
+   
 
 ###  线程的所有状态
 

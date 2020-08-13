@@ -82,9 +82,11 @@ BASE是对CAP中一致性和可用性权衡的结果，其来源于对大规模�
     2. 服务端处理watcher
     3. 客户端回调watcher
 
-###  ZAB协议
+###  ZAB协议（ZooKeeper Atomic BroadCast）
 
-ZooKeeper的核心是原子广播机制，这个机制保证了各个server之间的同步，实现这个机制的协议叫做ZAB协议。ZAB协议有两种模式，恢复模式和广播模式。
+1. ZAB协议是专门为ZooKeeper实现分布式协调功能而设计的，ZooKeeper主要是根据ZAB协议实现分布式数据一致性。
+2. ZooKeeper根据ZAB协议建立了主备模型完成ZooKeeper集群中数据的同步，主备模型是指在ZooKeeper集群中，只有一台leader负责处理外部客户端的事务请求，然后leader服务器将客户端的写操作数据同步到所有的follower中。
+3. ZAB的核心是在整个ZooKeeper集群中只有一个节点即leadre将客户端的写操作转化为事务（或提议proposal）。leader节点在数据写完之后，将向所有的follower节点发送数据广播请求，等待所有的follower节点反馈。在ZAB协议中，只要超过半数follower节点反馈OK，leader就会向所有的follower服务器发送commit消息。将leader节点上的数据同步到follower节点之上。
 
 ####  恢复模式
 

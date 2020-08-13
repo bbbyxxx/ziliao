@@ -87,14 +87,35 @@ BASE是对CAP中一致性和可用性权衡的结果，其来源于对大规模�
 1. ZAB协议是专门为ZooKeeper实现分布式协调功能而设计的，ZooKeeper主要是根据ZAB协议实现分布式数据一致性。
 2. ZooKeeper根据ZAB协议建立了主备模型完成ZooKeeper集群中数据的同步，主备模型是指在ZooKeeper集群中，只有一台leader负责处理外部客户端的事务请求，然后leader服务器将客户端的写操作数据同步到所有的follower中。
 3. ZAB的核心是在整个ZooKeeper集群中只有一个节点即leadre将客户端的写操作转化为事务（或提议proposal）。leader节点在数据写完之后，将向所有的follower节点发送数据广播请求，等待所有的follower节点反馈。在ZAB协议中，只要超过半数follower节点反馈OK，leader就会向所有的follower服务器发送commit消息。将leader节点上的数据同步到follower节点之上。
+4. ZAB协议主要有两种模式，一种是消息广播模式，一种是崩溃恢复模式
+
+####  消息广播模式
+
+- 在ZooKeeper集群中数据副本的传递策略就是采用消息广播模式。ZooKeeper中数据副本的同步方式与二阶段提交相似但又不同。二阶段提交要求协调者必须等到所有的参与者全部反馈ACK确认消息后，再发送commit消息。要求所有的参与者要么全部成功要么全部失败，二阶段提交会产生严重阻塞的问题。
+- ZAB协议中leader等待follower的ACK反馈是指“只要半数以上的follower成功反馈即可，不需要收到全部follower反馈”
+- 消息广播的具体步骤：
+  1. 客户端发起一个写操作请求
+  2. leader服务器将客户端的request请求转化为事务proposal提案，同时为每个proposal分配一个全局唯一的ID，ZXID
+  3. leader服务器与每个folloer之间都有一个队列，leader将消息发送到该队列
+  4. follower机器从队列中取出消息处理完毕后，向leader服务器发送ACK确认
+  5. leader服务器收到半数以上的followerACK后，即认为可以发送commit
+  6. leader向所有的follower服务器发送commit消息
+- ZooKeeper采用ZAB协议的核心是只要有一台服务器提交了proposal，就要确保所有的服务器最终都能正确提交proposal。
+- leader服务器与每个follower之间都有一个单独的队列进行收发消息，使用队列消息可以做到异步解耦。如果使用同步方式容易引起阻塞，性能上差很多。
 
 ####  恢复模式
 
-当服务启动或者在leader崩溃后，ZAB就进入了恢复模式，当leader被选举出来，且大多数server完成了和leader的状态同步以后，恢复模式就结束了。状态同步保证了leader和server具有相同的系统状态。
+- ZooKeeper集群中为保证任何所有进程能够有序的进行，只能是leader服务器接受写请求，即使是follower服务器接受到客户端的请求，也会转发到leader服务器进行处理。
+- 如果leader服务器发生崩溃，则ZAB协议要求ZooKeeper集群进行崩溃恢复和leader服务器选举
+- ZAB协议崩溃恢复要求满足如下两个要求：
+  - 确保已经被leader提交的proposal必须最终被所有的follower服务器提交
+  - 确保丢弃已经被leader提出的但是没有被提交的proposal
+- 新选举的leader不能包含未提交的proposal，同时，新选举的leader节点中含有最高的ZXID，这样的好处是可以避免leader服务器检查proposal的提交和丢弃工作
+- leader发生崩溃时分为以下场景：
+  - leader在提出proposal时未提交之前崩溃，则经过崩溃恢复之后，新选举的leader一定不能是之前的leader，因为这个leader存在未提交的proposal。
+  - leader在发送commit消息之后崩溃，即消息已经发送到队列中，经过崩溃恢复之后，参与选举的follower服务器中有的节点已经消费了队列中的commit消息，则该follower节点将会被选举为最新的leader。剩下的动作就是数据同步过程
 
-####  广播模式
 
-一旦leader已经和多数的follower进行了状态同步后，它就可以开始广播消息了，即进入广播状态。这时候当一个server加入ZooKeeper服务中，它会在恢复模式下启动，发现leader，并和leader进行状态同步。同步结束后，也加入消息广播，ZooKeeper服务一直维持在Broadcast状态，直到leader崩溃了或者leader失去了大部分的followers支持。
 
 ###  ZAB与Paxos算法的联系与区别
 

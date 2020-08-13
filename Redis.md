@@ -653,3 +653,46 @@ int level;
 2. 有序集合经常会进行zrange或zrevrang这种范围查找操作，双向链表可以十分方便地进行这类操作
 3. 实现简单，zrank操作还有可能达到O(logn)的时间复杂度
 
+
+
+##  Redis主从同步(配从不配主)
+
+###  配置文件:
+
+```conf
+include /library/redis-5.0.4/redis.conf
+pidfile /users/a/desktop/redis63**.pid
+port 63**
+dbfilename dump63**.rdb
+```
+
+
+![redis-ji](./images/Redis/redis-ji.png)
+
+###  配置主从
+
+```conf
+slave <ip> <port>  # 成为某个服务器的从服务器 
+```
+
+通过info replication来查看服务器状态
+主：
+![ji-master](./images/Redis/ji-master.png)
+
+从：
+![ji-slave](./images/Redis/ji-slave.png)
+
+###  哨兵
+
+Redis Sentinel是一个分布式的架构，它本身也是一个独立的Redis节点，不存储数据，支持部分命令，可以自动完成故障发现和故障转移，并通知应用方，从而实现高可用。
+
+每个Sentinel节点会对数据节点和其它sentinel节点进行监控，Sentinel间会进行监控数据的共享，当发现节点异常时，会对节点做下线标识，如果被标识的是主节点，此时会与其它Sentinel节点进行协商，当大多数Sentinel节点都认为主节点不可达的时候，会发起选举，重新选举master节点。
+
+Sentinel主要提供以下几个功能：
+
+- 监控：定期检测Redis数据节点、其它Sentinel节点是否可达
+- 通知：将故障转移的结果通知给应用方
+- 主节点故障转移：实现从节点晋升为主节点，并维护后续正确的主从关系
+- 配置提供者：客户端在初始化的时候连接Sentinel节点集合，从中获取主节点信息
+  多个Sentinel节点来共同判断故障，可以有效防止误判，同时如果个别Sentinel节点不可用，整个Sentinel节点集合依然是高可用的。
+

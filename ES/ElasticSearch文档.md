@@ -87,17 +87,18 @@
    然后访问：http://127.0.0.1:9200/，出现如下内容，则代表安装成功：			
 ![start_finish](../images/ES/start_finish.jpg)
    
+
 此时连接ES会存在跨域问题，请在config/elasticsearch.yml中添加如下配置：
-   
+
    ```
    http.cors.enabled: true
    http.cors.allow-origin: "*"
-```
-   
+   ```
+
    并重启ES，然后就可以连接上，此时我们再删除多余的索引，以便后面的学习
 
    ![remove_index](../images/ES/remove_index.jpg)
-   
+
 3. 安装ES-head插件，可以直观的看到ES运行和数据存储的情况。  
    进入到ES安装目录，下载ES-head插件
    git clone git://github.com/mobz/elasticsearch-head.git
@@ -336,7 +337,7 @@
    ```
 
    可以在ES-head中对比查看
-   ![ES_CRUD](image/ES_CRUD.png)
+   ![ES_CRUD](../images/ES/ES_CRUD.png)
 
 4. ES的批量请求
 

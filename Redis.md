@@ -696,3 +696,9 @@ Sentinel主要提供以下几个功能：
 - 配置提供者：客户端在初始化的时候连接Sentinel节点集合，从中获取主节点信息
   多个Sentinel节点来共同判断故障，可以有效防止误判，同时如果个别Sentinel节点不可用，整个Sentinel节点集合依然是高可用的。
 
+###  如何选新的master
+
+1. 较低的slave_priority(在配置文件中指定，默认配置为100)
+2. 较大的replication offset(每个slave在与master同步后offset自动增加)
+3. 较小的runid(每个redis实例，都会有一个runid，通常是一个40位的随机字符串，在启动时设置，重复概率非常小)
+4. 如果以上条件都不足以区别出唯一的节点，则会看哪个slave节点处理之前master发送的command多就选谁

@@ -117,6 +117,13 @@ BASE是对CAP中一致性和可用性权衡的结果，其来源于对大规模�
 
 
 
+###  ZAB协议原理
+
+- ZAB协议要求每个leader都要经历三个阶段，发现、同步、广播
+- 发现：要求ZooKeeper集群必须选择出一个leader进程，同时leader会维护一个follower可用列表。
+- 同步：leader要负责将本身的数据与follower完成同步，做到多副本存储。这样也是体现了CAP中高可用和分区容错，follower将队列中未处理完的请求消费完成后，写入本地事务日志中。
+- 广播：leader可以接受客户端新的proposal请求，将新的proposal请求广播给所有的follower。
+
 ###  ZAB与Paxos算法的联系与区别
 
 相同点：

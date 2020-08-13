@@ -94,7 +94,7 @@ ZooKeeper的核心是原子广播机制，这个机制保证了各个server之�
 
 一旦leader已经和多数的follower进行了状态同步后，它就可以开始广播消息了，即进入广播状态。这时候当一个server加入ZooKeeper服务中，它会在恢复模式下启动，发现leader，并和leader进行状态同步。同步结束后，也加入消息广播，ZooKeeper服务一直维持在Broadcast状态，直到leader崩溃了或者leader失去了大部分的followers支持。
 
-###  ZAP与Paxos算法的联系与区别
+###  ZAB与Paxos算法的联系与区别
 
 相同点：
 

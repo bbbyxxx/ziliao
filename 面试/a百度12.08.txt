@@ -1,0 +1,15 @@
+51min
+1.实习经历，实习时的项目功能、职责（20min）
+2.项目介绍，redis和mysql是如何保证数据同步性的
+3.rabbitmq是如何保证可靠的，kafka适用于什么场景（分布式日志...）
+4.springboot的优势、介绍一下springboot
+5.orm有了解过Springdata吗，如何把mybatis里的xml迁移到springboot
+6.redis的作用、实用场景
+7.说一下微服务，docker的优点，docker中的端口映射问题
+8.静态内部类和非静态内部类，内部类为什么可以访问到它外部类的数据和方法？
+9.lambda表达式在jvm里是如何体现的
+10.hash冲突了解哪些？说一下hashmap里的hash冲突，红黑树的定义，put一个元素到红黑树里红黑树的转变过程
+11.正向代理、反向代理，nginx有了解过吗
+12.android里的handler了解吗
+13.zookeeper、springcloud知道吗，你的项目有没有使用多台机器
+14.还有什么想问我的

@@ -1,0 +1,19 @@
+一面 50min
+1.面试官自我介绍
+2.介绍Java中的Object
+3.说一下HashMap，ConcurrentHashMap
+4.如何使用锁，对象锁和类锁的区别，底层怎么实现，锁升级
+5.Zookeeper 如果一个节点挂了怎么办，CAP原理，BASE
+6.数据库事务、undo log，redo log
+7.TCP和UDP的区别，TCP如何可靠，拥塞控制讲一下
+8.写一个生产者消费者模式
+9.还有什么想问我的
+
+二面 40min
+1.自我介绍
+2.进程和线程的区别，讲细点，进程间如何通信
+3.Java中new一个对象内存怎么分配
+4.ES架构，怎么联查
+5.实习学到了什么，最大的收获是什么
+6.Redis中的hash是什么，什么时候rehash，怎么rehash
+7.还有什么想问我的

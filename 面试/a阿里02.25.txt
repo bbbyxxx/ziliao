@@ -1,0 +1,12 @@
+用户增长     40min
+1.自我介绍
+2.equals和hashCode的区别
+3.Linkedlist底层实现
+4.说一下java中的锁，synchronized和Reenlock的区别
+5.MQ的可靠性，AMQP协议说一下，怎么保证
+6.项目中遇到的问题，怎么解决？
+7.Spring和SpringBoot的区别
+8.Spring的IOC和AOP
+9.MyBatis中$、#区别在哪，二级缓存？
+10.什么是长连接、什么是短连接
+11.了解限流吗，什么是令牌桶
